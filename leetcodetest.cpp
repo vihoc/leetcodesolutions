@@ -1583,6 +1583,41 @@ namespace solution81
 
 }
 
+namespace solution92
+{
+	struct ListNode {
+		int val;
+		ListNode* next;
+		ListNode() : val(0), next(nullptr) {}
+		ListNode(int x) : val(x), next(nullptr) {}
+		ListNode(int x, ListNode* next) : val(x), next(next) {}
+	
+	};
+	ListNode* reverseBetween(ListNode* head, int left, int right) {
+		if (nullptr == head) return head;
+		auto* current1 = head;
+		auto* current2 = head;
+		for (int indexleft = 1; indexleft < left; indexleft++)
+		{
+			current1 = current1->next;
+			current2 = current2->next;
+		}
+		while (left < right)
+		{
+			for (int indexright = 0; indexright < (right - left); indexright++)
+			{
+				current2 = current2->next;
+			}
+			std::swap(current1->val, current2->val);
+			current1 = current1->next;
+			current2 = current1;
+			left++; 
+			right--;
+		}
+		return head;
+	}
+}
+
 int main()
 {
 	/*
