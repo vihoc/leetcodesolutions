@@ -1617,6 +1617,105 @@ namespace solution92
 		return head;
 	}
 }
+namespace solution94
+{
+	struct TreeNode {
+		int val;
+		TreeNode* left;
+		TreeNode* right;
+		TreeNode() : val(0), left(nullptr), right(nullptr) {}
+		TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+		TreeNode(int x, TreeNode* left, TreeNode* right) : val(x), left(left), right(right) {}
+
+	};
+	void do_travel(TreeNode* root, vector<int>& out)
+	{
+		if (nullptr == root) return;
+		do_travel(root->left, out);
+		out.emplace_back(root->val);
+		do_travel(root->right, out);
+
+	}
+	vector<int> inorderTraversal(TreeNode* root) {
+		vector<int> ret;
+		if (nullptr == root) return ret;
+		do_travel(root, ret);
+		return ret;
+	}
+}
+
+namespace solution144
+{
+	struct TreeNode {
+		int val;
+		TreeNode* left;
+		TreeNode* right;
+		TreeNode() : val(0), left(nullptr), right(nullptr) {}
+		TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+		TreeNode(int x, TreeNode* left, TreeNode* right) : val(x), left(left), right(right) {}
+
+	};
+	inline void do_travel(TreeNode* root, vector<int>& out)
+	{
+		//if (nullptr == root) return; delete this line because  fumction calls are too expensive, may be i can try not call this function when pointer is null, so i get 100% beats
+
+		out.emplace_back(root->val);
+		if (nullptr != root->left) do_travel(root->left, out);
+		if (nullptr != root->right) do_travel(root->right, out);
+
+	}
+	vector<int> inorderTraversal(TreeNode* root) {
+		vector<int> ret;
+		if (nullptr == root) return ret;
+		do_travel(root, ret);
+		return ret;
+	}
+}
+namespace solution145
+{
+	struct TreeNode {
+		int val;
+		TreeNode* left;
+		TreeNode* right;
+		TreeNode() : val(0), left(nullptr), right(nullptr) {}
+		TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+		TreeNode(int x, TreeNode* left, TreeNode* right) : val(x), left(left), right(right) {}
+
+	};
+	//as i said, function calls are expresive, so this time i don't call any function, just use stack, 100% beats :)
+	vector<int> postorderTraversal(TreeNode* root) {
+		vector<int> ret;
+		stack<TreeNode*> traverstack;
+		if (nullptr == root) return ret;
+		auto* prev = root;
+		traverstack.push(prev);
+		while (!traverstack.empty())
+		{
+			auto* temp = traverstack.top();
+
+			if (temp == prev)
+			{
+				ret.emplace_back(temp->val);
+				traverstack.pop();
+			}
+			if (nullptr != temp->left)
+			{
+				traverstack.push(temp->left);
+			}
+			if (nullptr != temp->right)
+			{
+				traverstack.push(temp->right);
+			}
+
+			if (!traverstack.empty()) prev = traverstack.top();
+		}
+
+		std::reverse(ret.begin(), ret.end());
+
+
+		return ret;
+	}
+}
 
 int main()
 {
