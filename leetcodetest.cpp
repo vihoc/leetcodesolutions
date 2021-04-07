@@ -1717,6 +1717,54 @@ namespace solution145
 	}
 }
 
+namespace solution133
+{
+	class Node {
+	public:
+		int val;
+		std::vector<Node*> neighbors;
+
+		Node() {
+			val = 0;
+			neighbors = std::vector<Node*>();
+		}
+
+		Node(int _val) {
+			val = _val;
+			neighbors = std::vector<Node*>();
+		}
+
+		Node(int _val, std::vector<Node*> _neighbors) {
+			val = _val;
+			neighbors = _neighbors;
+		}
+	};
+	Node* cloneGraph(Node* node)
+	{
+		if (nullptr == node) return node;
+		if (node->neighbors.empty()) return new Node(node->val);
+		std::queue<Node*> nodes;
+		std::unordered_map<Node*, Node*> org_to_clone;
+		org_to_clone[node] = new Node(node->val);
+		nodes.push(node);
+		while (!nodes.empty())
+		{
+			auto* topnode = nodes.front();
+			nodes.pop();
+			for (auto neighbor : topnode->neighbors)
+			{
+				if (!org_to_clone.count(neighbor))
+				{
+					org_to_clone[neighbor] = new Node(neighbor->val);
+					nodes.push(neighbor);
+				}
+				org_to_clone[topnode]->neighbors.push_back(org_to_clone[neighbor]);
+			}
+		}
+		return org_to_clone[node];
+	}
+};
+
 int main()
 {
 	/*
