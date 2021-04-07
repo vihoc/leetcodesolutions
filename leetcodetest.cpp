@@ -1765,6 +1765,42 @@ namespace solution133
 	}
 };
 
+	void reorderList(ListNode* head)
+	{
+		if (nullptr == head) return;
+		auto* ptr = head;
+		std::deque<ListNode*> list;
+		while (nullptr != head)
+		{
+			list.push_back(head);
+			head = head->next;
+		}
+		vector<ListNode*> finalList;
+		finalList.reserve(list.size());
+		size_t count = (list.size() + 1) / 2;
+		while (!list.empty())
+		{
+			auto* first = list.front();
+			auto* end = list.back();
+			finalList.push_back(left);
+
+			if (left != right) {
+				finalList.push_back(right);
+				list.pop_back();
+			}
+
+			list.pop_front();
+		}
+
+		for (size_t i = 0; i < finalList.size() - 1; ++i)
+			finalList[i]->next = finalList[i + 1];
+
+		finalList.back()->next = nullptr;
+		
+		return;
+	}
+}
+
 int main()
 {
 	/*
