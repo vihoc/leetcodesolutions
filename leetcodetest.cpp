@@ -1801,6 +1801,35 @@ namespace solution133
 	}
 }
 
+namespace solution114
+{
+	struct TreeNode {
+		int val;
+		TreeNode* left;
+		TreeNode* right;
+		TreeNode() : val(0), left(nullptr), right(nullptr) {}
+		TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+		TreeNode(int x, TreeNode* left, TreeNode* right) : val(x), left(left), right(right) {}
+
+	};
+
+	void flatten(TreeNode* root) {
+		if (nullptr == root) return;
+		while (nullptr != root)
+		{
+			if (nullptr != root->left)
+			{
+				auto* pre = root->left;
+				while (nullptr != pre->right) pre = pre->right;
+				pre->right = root->right;
+				root->right = root->left;
+				root->left = nullptr;
+			}
+			root = root->right;
+		}
+	}
+}
+
 int main()
 {
 	/*
