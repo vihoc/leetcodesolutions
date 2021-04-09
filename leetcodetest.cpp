@@ -1830,6 +1830,62 @@ namespace solution114
 	}
 }
 
+namespace solution429
+{
+	class Node {
+	public:
+		int val;
+		vector<Node*> children;
+
+		Node() {}
+
+		Node(int _val) {
+			val = _val;
+		}
+
+		Node(int _val, vector<Node*> _children) {
+			val = _val;
+			children = _children;
+		}
+	};
+	
+
+	vector<vector<int>> levelOrder(Node* root) {
+		vector<vector<int>> ret;
+		if (nullptr == root)  return ret;
+		queue<Node*> que;
+		que.push(root);
+		int count = 0;
+		int lastcount = 1;
+		vector<int> v;
+		while (!que.empty())
+		{
+			auto* temp = que.front();
+			que.pop();
+			lastcount--;
+			v.emplace_back(temp->val);
+			for (auto p : temp->children)
+			{
+				if (nullptr != p)
+				{
+					que.push(p);
+					count++;
+				}
+			}
+			if (0 == lastcount)
+			{
+				lastcount = count;
+				count = 0;
+				ret.emplace_back(v);
+				v.clear();
+				v.reserve(count);
+
+			}
+		}
+		return ret;
+	}
+}
+
 int main()
 {
 	/*
