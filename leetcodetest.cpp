@@ -1886,6 +1886,50 @@ namespace solution429
 	}
 }
 
+
+namespace solution402
+{
+	string removeKdigits(string num, int k) {
+		if (num.empty()) return "";
+		if (num.size() == k) return "0";
+		string ret;
+		ret.reserve(num.size());
+		for (auto c : num)
+		{
+			
+			while (!ret.empty() && ret.back() > c && k > 0)
+			{
+				ret.pop_back();
+				k--;
+			}
+			
+			ret.push_back(c);
+		}
+		if (k > 0)
+		{
+			size_t newsize = (ret.size() > k) ? ret.size() - k : ret.size();
+			ret.resize(newsize);
+			ret.shrink_to_fit();
+		}
+
+		if (1 != ret.size())
+		{
+			size_t index = 0;
+			 for (; index != ret.size(); ++index)
+			 {
+			 	if ('0' != ret[index])break;
+			}
+			
+			if (index == ret.size()) index--;
+
+			return ret.substr(index, ret.size());
+		}
+
+		return ret;
+
+	}
+}
+
 int main()
 {
 	/*
@@ -2202,7 +2246,21 @@ int main()
  
 //vector<int> vi = { 1, 0, 1, 1,1 };
 //solution81::search(vi, 0);
-ULONGLONG t2 = GetTickCount64();
+// cout << solution402::removeKdigits("10",
+// 	1) << endl;
+// cout << solution402::removeKdigits("1432219",
+// 	3) << endl;
+// cout << solution402::removeKdigits("10200",
+// 	1) << endl;
+// cout << solution402::removeKdigits("10",
+// 	2) << endl;
+// cout << solution402::removeKdigits("10001",
+// 	4) << endl;
+// cout << solution402::removeKdigits("100",
+// 	1) << endl;
+// 
+
+ ULONGLONG t2 = GetTickCount64();
 
 
 
