@@ -1930,6 +1930,142 @@ namespace solution402
 	}
 }
 
+
+namespace solution321
+{
+	vector<int> findmax(vector<int>& vec, int nums)
+	{
+		vector<int> ret;
+		ret.reserve(vec.size());
+		if (0 == nums) return std::move(ret);
+		if (nums == vec.size())
+		{
+			ret.assign(vec.begin(), vec.end());
+			return std::move(ret);
+		}
+		int removal = vec.size() - nums;
+		for (int i = 0; i < vec.size(); ++i)
+		{
+			while (!ret.empty() && ret.back() < vec[i] && removal > 0)
+			{
+				ret.pop_back();
+				removal--;
+			}
+			ret.emplace_back(vec[i]);
+		}
+		while (removal--) ret.pop_back();
+
+		return std::move(ret);
+	}
+	vector<int> combine(vector<int>& vec1, vector<int>& vec2)
+	{
+		vector<int> ret;
+		ret.reserve(vec1.size() + vec2.size());
+		while (!vec1.empty() && !vec2.empty())
+		{
+			vector<int>* p = nullptr;
+			vector<int>::iterator iter;
+			if (*vec1.begin() > *vec2.begin())
+			{
+				iter = vec1.begin();
+				p = &vec1;
+			}
+			else if (*vec1.begin() < *vec2.begin())
+			{
+				iter = vec2.begin();
+				p = &vec2;
+			}
+			else //== lookup after element, push the bigger side
+			{
+				auto iter1 = vec1.begin() + 1;
+				auto iter2 = vec2.begin() + 1;
+				while (nullptr == p && iter1 != vec1.end() && iter2 != vec2.end())
+				{
+					if (*iter1 == *iter2)
+					{
+						iter1++;
+						iter2++;
+						continue;
+					}
+					if (*iter1 > *iter2)
+					{
+						iter = vec1.begin();
+						p = &vec1;
+					}
+					else
+					{
+						iter = vec2.begin();
+						p = &vec2;
+					}
+					iter1++;
+					iter2++;
+				}
+				if (nullptr == p && iter1 == vec1.end())
+				{
+					iter = vec2.begin();
+					p = &vec2;
+				}
+				if (nullptr == p && iter2 == vec2.end())
+				{
+					iter = vec1.begin();
+					p = &vec1;
+				}
+			}
+			ret.emplace_back(*iter);
+			if (nullptr != p)
+				p->erase(iter);
+		}
+		if (!vec1.empty()) ret.insert(ret.end(), vec1.begin(), vec1.end());
+		if (!vec2.empty()) ret.insert(ret.end(), vec2.begin(), vec2.end());
+		return std::move(ret);
+	}
+	bool greatervec(vector<int>& src, vector<int>& vec)
+	{
+		if (src.empty()) return true;
+		if (src.size() != vec.size()) return false;
+		auto iter1 = src.begin();
+		auto iter2 = vec.begin();
+		for (; iter1 != src.end(); ++iter1, ++iter2)
+		{
+			if (*iter1 < *iter2) return true;
+			else if (*iter1 > *iter2) break;
+		}
+		return false;
+	}
+	vector<int> maxNumber(vector<int>& nums1, vector<int>& nums2, int k) {
+		vector<int> ret;
+		if (nums1.empty() && nums2.empty() || k == 0) return std::move(ret);
+		int size1 = nums1.size();
+		int size2 = nums2.size();
+		ret.reserve(k);
+		for (int index = std::max(0, k - size2); index <= std::min(size1, k); index++)
+		{
+			if (index > size1 || (k - index) > size2) continue;
+			cout << "=====loop====";
+			vector<int> temp1 = findmax(nums1, index);
+			cout << "========" << endl;
+			for (auto i : temp1)
+			{
+				cout << " " << i << " ";
+			}
+			cout << endl;
+			vector<int> temp2 = findmax(nums2, k - index);
+			cout << "========" << endl;
+			for (auto i : temp2)
+			{
+				cout << " " << i << " ";
+			}
+			cout << endl;
+			vector<int> tempres = combine(temp1, temp2);
+			if (greatervec(ret, tempres))
+			{
+				ret.assign(tempres.begin(), tempres.end());
+			}
+		}
+		return ret;
+	}
+}
+
 int main()
 {
 	/*
@@ -2259,7 +2395,35 @@ int main()
 // cout << solution402::removeKdigits("100",
 // 	1) << endl;
 // 
-
+// vector<int> v1 = { 3, 9 };
+// vector<int> v2 = { 8, 9 };
+// vector<int> v3 = { 8, 6, 9 };
+// vector<int> v4 = { 1, 7, 5 };
+// vector<int> v5 = { 9, 1, 2, 5, 8, 3 };
+// vector<int> v6 = { 3, 4, 6, 5 };
+// vector<int> v7 = { 6, 6, 8 };
+// vector<int> v8 = { 5, 0, 9 };
+// vector<int> v9 = { 2, 5, 6, 4, 4, 0 };
+// vector<int> v10 = { 7, 3, 8, 0, 6, 5, 7, 6, 2 };
+// vector<int> v11 = { 6, 7 };
+// vector<int> v12 = { 6 , 0, 4 };
+// vector<int> v13 = { 5, 6, 8 };
+// vector<int> v14 = { 6, 4, 0 };
+// 
+// vector<int> v15 = { 1, 6, 5, 4, 7, 3, 9, 5, 3, 7, 8, 4, 1, 1, 4 };
+// vector<int> v16 = { 4, 3, 1, 3, 5, 9 };
+// 
+// 
+// // 
+// solution321::maxNumber(v1, v2, 3);
+// solution321::maxNumber(v2, v1, 3);
+// solution321::maxNumber(v3, v4, 3);
+// solution321::maxNumber(v5, v6, 5);
+// solution321::maxNumber(v7, v8, 3);
+// solution321::maxNumber(v9, v10, 15);
+// solution321::maxNumber(v11, v12, 5);
+// solution321::maxNumber(v13, v14, 3);
+// solution321::maxNumber(v15, v16, 21);
  ULONGLONG t2 = GetTickCount64();
 
 
