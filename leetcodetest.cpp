@@ -2066,6 +2066,35 @@ namespace solution321
 	}
 }
 
+namespace solution11
+{
+	int maxArea(vector<int>& height) {
+		int res = 0;
+		int left = 0, right = height.size() - 1;
+		while (left < right)
+		{
+			int vleft = height[left], vright = height[right];
+			int tempres = std::min(vleft, vright) * (right - left);
+			res = std::max(res, tempres);
+			if (vleft > vright)
+			{
+				do {
+					right--;
+				} while (left < right && vright >= height[right]);
+			}
+			else if (vleft < right)
+			{
+				do
+				{
+					left++;
+				} while (left < right && vleft >= height[left]);
+
+			}
+		}
+		return res;
+	}
+}
+
 int main()
 {
 	/*
