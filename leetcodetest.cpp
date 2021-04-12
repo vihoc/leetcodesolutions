@@ -2095,6 +2095,44 @@ namespace solution11
 	}
 }
 
+namespace solution16
+{
+	int threeSumClosest(vector<int>& nums, int target) {
+		if (nums.size() < 3) return 0;
+		sort(nums.begin(), nums.end());
+		int best_delta = INT_MAX;
+		for (size_t index = 0; index < nums.size() - 2; ++index)
+		{
+			if (index && (nums[index] == nums[index - 1])) continue;
+			size_t low = index + 1;
+			size_t high = nums.size() - 1;
+			while (low < high)
+			{
+				auto sum = nums[index] + nums[low] + nums[high];
+				if (sum == target) return target;
+				auto delta = target - sum;
+				if (abs(delta) < abs(best_delta))
+				{
+					best_delta = delta;
+				}
+				if (sum > target)
+				{
+					size_t high1 = high - 1;
+					while (low < high1 && nums[high] == nums[high1]) high1--;
+					high = high1;
+				}
+				else if (sum < target)
+				{
+					size_t low1 = low + 1;
+					while (low1 < high && nums[low] == nums[low1]) low1++;
+					low = low1;
+				}
+			}
+		}
+		return target - best_delta;
+	}
+}
+
 int main()
 {
 	/*
