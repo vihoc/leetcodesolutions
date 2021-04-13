@@ -2133,6 +2133,38 @@ namespace solution16
 	}
 }
 
+namespace solution75
+{
+	void sortColors(vector<int>& nums) {
+		int end = nums.size() - 1;
+		if (end < 1) return;
+		int begin = 0, i = 0;
+		while (i <= end)
+		{
+			if (0 == nums[i])
+			{
+				if (nums[i] != nums[begin])std::swap(nums[i++], nums[begin++]);
+				else
+				{
+					i++, begin++;
+				}
+			}
+			else if (1 == nums[i])
+			{
+				i++;
+			}
+			else
+			{
+				if (nums[i] != nums[end])std::swap(nums[i], nums[end--]);
+				else
+				{
+					end--;
+				}
+			}
+		}
+	}
+}
+
 int main()
 {
 	/*
