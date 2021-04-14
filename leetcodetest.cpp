@@ -2165,6 +2165,26 @@ namespace solution75
 	}
 }
 
+
+namespace solution238
+{
+	std::vector<int> productExceptSelf(std::vector<int>& nums) {
+		vector<int> ret(nums.size());
+		ret[0] = 1;
+		for (size_t i = 1; i < nums.size(); ++i)
+		{
+			ret[i] = ret[i - 1] * nums[i - 1];
+		}
+		int product_on_the_right = 1;
+		for (size_t i = nums.size(); i-- > 0; )
+		{
+			ret[i] = ret[i] * product_on_the_right;
+			product_on_the_right *= nums[i];
+		}
+		return ret;
+	}
+}
+
 int main()
 {
 	/*
