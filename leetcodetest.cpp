@@ -2185,6 +2185,30 @@ namespace solution238
 	}
 }
 
+namespace solution313
+{
+	int nthSuperUglyNumber(int n, vector<int>& primes) {
+		if (n <= 0) return 0;
+		if (n == 1) return 1;
+		vector<int> uglyNumber;
+		uglyNumber.reserve(n);
+		uglyNumber.emplace_back(1);
+		std::vector<int> pointer(primes.size(), 0);
+
+		for (size_t i = 1; i < n; ++i)
+		{
+			int nextugly = INT_MAX;
+			for (size_t j = 0; j < primes.size(); ++j)
+				nextugly = min(nextugly, uglyNumber[pointer[j]] * primes[j]);
+			uglyNumber.emplace_back(nextugly);
+			for (size_t j = 0; j < primes.size(); ++j)
+				if (primes[j] * uglyNumber[pointer[j]] == nextugly) pointer[j]++;
+		}
+		return uglyNumber.back();
+	}
+}
+
+
 int main()
 {
 	/*
