@@ -2209,6 +2209,39 @@ namespace solution313
 }
 
 
+
+namespace solution322
+{
+	using graph_t = std::map<std::string, std::multiset<string>>;
+
+	void route(const string& begin_port, graph_t& graph, std::vector<std::string>& answer)
+	{
+		auto& destinations = graph[begin_port];
+		while (!destinations.empty())
+		{
+			auto dest = *destinations.begin();
+			destinations.erase(destinations.begin());
+			route(dest, graph, answer);
+		}
+		answer.emplace_back(begin_port);
+	}
+
+
+	vector<string> findItinerary(vector<vector<string>>& tickets)
+	{
+		graph_t fight_graph;
+		std::vector<std::string> answer;
+		for (auto ticket : tickets)
+		{
+			fight_graph[ticket[0]].emplace(ticket[1]);
+		}
+		route("JFK", fight_graph, answer);
+		std::reverse(answer.begin(), answer.end());
+		return answer;
+	}
+}
+
+
 int main()
 {
 	/*
