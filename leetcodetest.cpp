@@ -2241,7 +2241,26 @@ namespace solution322
 	}
 }
 
-
+namespace solution343
+{
+	// 7 = 3 + 4, 3*4 = 12
+	// 8 = 3 + 3 + 2, 3*3*2 = 18
+	// 9 = 3 + 3 + 3, 3 * 3 * 3 = 27
+	// 10 = 3 + 3 + 4,  3 * 3  * 4 =36
+	// 11 = 3 + 3 + 3 + 2, 3 * 3 * 3 * 2 = 54   
+	int integerBreak(int n)
+	{
+		if (2 == n || 1 == n) return 1;
+		if (3 == n) return 2;
+		int result = 1;
+		while (n > 4)
+		{
+			result *= 3; // n times 3
+			n -= 3;
+		}
+		return result * n;
+	}
+}
 int main()
 {
 	/*
