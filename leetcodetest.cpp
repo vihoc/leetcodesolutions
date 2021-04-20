@@ -18,7 +18,8 @@
 #include <stack>
 #include <sstream>
 #include <unordered_map>
-
+#include <thread>
+#include <functional>
 #include <algorithm>
 
 
@@ -2261,6 +2262,127 @@ namespace solution343
 		return result * n;
 	}
 }
+
+namespace Csolution1115 //concurrency
+{
+	class FooBar {
+	private:
+		int n;
+		volatile bool printyet;
+		std::mutex mut;
+		//std::mutex mut2;
+	public:
+		FooBar(int n) {
+			this->n = n;
+			printyet = false;
+		}
+
+		void foo(std::function<void()> printFoo) {
+
+			//cout << "foofunc";
+			for (int i = 0; i < n; i++) {
+
+				while (printyet) this_thread::yield();
+				// printFoo() outputs "foo". Do not change or remove this line.
+				printFoo();
+				std::lock_guard<std::mutex> guard(mut);
+				printyet = true;
+			}
+
+		}
+
+		void bar(std::function<void()> printBar) {
+			//std::lock_guard<std::mutex> guard(mut2);
+			//cout << "barfunc";
+			for (int i = 0; i < n; i++) {
+
+				while (!printyet) this_thread::yield();
+				// printBar() outputs "bar". Do not change or remove this line.
+				printBar();
+				std::lock_guard<std::mutex> guard(mut);
+				printyet = false;
+			}
+		}
+	};
+
+	void test()
+	{
+		FooBar Foo(5);
+		auto PrintCB = std::bind(&FooBar::foo, &Foo, std::placeholders::_1);
+		auto PrintCcB = std::bind(&FooBar::bar, &Foo, std::placeholders::_1);
+		std::thread  thread1(PrintCB, []() {std::cout << "foo"; });
+		std::thread thread2(PrintCcB, []() {std::cout << "bar"; });
+		thread1.join();
+		thread2.join();
+
+	}
+}
+
+namespace Csolution1116
+{
+	class ZeroEvenOdd {
+	private:
+		int n;
+		std::mutex mut;
+		bool status;
+		bool iseven;
+	public:
+		ZeroEvenOdd(int n) {
+			this->n = n;
+			status = false;
+			iseven = false;
+		}
+
+		// printNumber(x) outputs "x", where x is an integer.
+		void zero(function<void(int)> printNumber) {
+			for (size_t i = 0; i < n; ++i)
+			{
+				while (status) this_thread::yield();
+
+				printNumber(0);
+				std::lock_guard<std::mutex> guard(mut);
+				status = true;
+
+			}
+		}
+
+		void even(function<void(int)> printNumber) {
+			for (size_t i = 0; i < (n / 2); ++i)
+			{
+				while (!status || !iseven) this_thread::yield();
+				printNumber(2 * (i + 1));
+				std::lock_guard<std::mutex> guard(mut);
+				status = false;
+				iseven = false;
+			}
+		}
+
+		void odd(function<void(int)> printNumber) {
+			for (size_t i = 0; i < ((n + 1) / 2); ++i)
+			{
+				while (!status || iseven) this_thread::yield();
+				printNumber((2 * (i + 1)) - 1);
+				std::lock_guard<std::mutex> guard(mut);
+				status = false;
+				iseven = true;
+			}
+		}
+	};
+	void test() //USE this function to test
+	{
+		ZeroEvenOdd obj(6);
+		auto PrintCB = std::bind(&ZeroEvenOdd::zero, &obj, std::placeholders::_1);
+		auto PrintOdd = std::bind(&ZeroEvenOdd::odd, &obj, std::placeholders::_1);
+		auto PrintEven = std::bind(&ZeroEvenOdd::even, &obj, std::placeholders::_1);
+		std::thread  thread1(PrintCB, [](int n) {std::cout << n; });
+		std::thread thread2(PrintOdd, [](int n) {std::cout << n; });
+		std::thread thread3(PrintEven, [](int n) {std::cout << n; });
+		thread1.join();
+		thread2.join();
+		thread3.join();
+	}
+}
+
 int main()
 {
 	/*
