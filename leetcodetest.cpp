@@ -18,10 +18,13 @@
 #include <stack>
 #include <sstream>
 #include <unordered_map>
-#include <thread>
+
 #include <functional>
 #include <algorithm>
 
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
 using namespace std;
 namespace solution15
@@ -2382,6 +2385,105 @@ namespace Csolution1116
 		thread3.join();
 	}
 }
+
+
+namespace Csolution1117
+{
+	class H2O {
+		condition_variable cv_H;
+		condition_variable cv_O;
+		mutex mutexH;
+		mutex mutexO;
+
+		int countH;
+
+	public:
+		H2O() {
+			countH = 0;
+
+		}
+
+		void hydrogen(function<void()> releaseHydrogen) {
+
+			std::unique_lock<std::mutex> lk(mutexH);
+			if (0 != countH)
+			{
+				cv_H.wait(lk, [this]()->bool {
+					return 0 != this->countH;
+					});
+			}
+
+			countH++;
+			if (0 == countH % 2)
+			{
+				//cout << "countH" << countH;
+				cv_O.notify_one();
+			}
+			if (1 == countH % 2)
+			{
+				cv_H.notify_one();
+			}
+			releaseHydrogen();
+		}
+
+		void oxygen(function<void()> releaseOxygen) {
+			std::unique_lock<std::mutex> lk(mutexO);
+			cv_O.wait(lk);
+			releaseOxygen();
+			if (0 == countH)
+			{
+				cv_H.notify_one();
+
+			}
+			// releaseOxygen() outputs "O". Do not change or remove this line.
+		}
+	};
+
+	//before i try to write code for this question, i try to use code blow to test OJ's behaver
+	//it looks like to generate 3*n thread, 
+	/*
+class H2O {
+	std::mutex mut;
+public:
+	H2O() {
+
+	}
+
+	void hydrogen(function<void()> releaseHydrogen) {
+		std::lock_guard<std::mutex> guard(mut);
+		cout<< "H" << this_thread::get_id() << endl;;
+		releaseHydrogen();
+	}
+
+	void oxygen(function<void()> releaseOxygen) {
+		std::lock_guard<std::mutex> guard(mut);
+		 cout<< "O" << this_thread::get_id() << endl;;
+		releaseOxygen();
+	}
+};
+	*/
+
+	void test()
+	{
+		constexpr size_t times = 10;//n in the question: Total length of input string will be 3n, where 1 ¡Ü n ¡Ü 20.
+		vector<shared_ptr<thread>> threadpool;
+		H2O obj;
+		for (size_t i = 0; i < times; ++i)
+		{
+
+			auto PrintHydrogen = std::bind(&H2O::hydrogen, &obj, std::placeholders::_1);
+			auto PrintHydrogen1 = std::bind(&H2O::hydrogen, &obj, std::placeholders::_1);
+			auto PrintOxygen = std::bind(&H2O::oxygen, &obj, std::placeholders::_1);
+
+			threadpool.push_back(make_shared<thread>(thread(PrintHydrogen, []() {std::cout << "H"; })));
+			threadpool.push_back(make_shared<thread>(thread(PrintHydrogen, []() {std::cout << "H"; })));
+			threadpool.push_back(make_shared<thread>(thread(PrintOxygen, []() {std::cout << "O"; })));
+		} 
+		for (auto t : threadpool)
+		{
+			t->join();
+		}
+	}
 
 int main()
 {
