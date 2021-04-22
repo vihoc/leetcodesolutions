@@ -6,6 +6,9 @@
 // how to use: if u interest at a question, just write code in the main function use solution<question number>::functionname, and pass the paramter.
 // some debug case is remain in the main function. if u don't like it, just delete it.
 //
+//for Csolution, this is a collect for concurrency, use the namespace::test() to test. 
+//if u want see the result in leetcode, just copy the class in namespace and click run.
+
 #if defined _MSC_VER
 #define NOMINMAX
 #include <Windows.h>
@@ -2485,6 +2488,114 @@ public:
 		}
 	}
 
+
+	namespace Csolution1195
+	{
+		class Semaphore {
+		private:
+			int n_;
+			mutex mu_;
+			condition_variable cv_;
+
+		public:
+			Semaphore(int n) : n_{ n } {}
+
+		public:
+			void wait() {
+				unique_lock<mutex> lock(mu_);
+				if (!n_) {
+					cv_.wait(lock, [this] {return n_; });
+				}
+				--n_;
+			}
+			template <class _Predicate>
+			void wait(_Predicate pred) {
+				unique_lock<mutex> lock(mu_);
+				if (!(std::invoke(pred) || n_)) {
+					cv_.wait(lock, [&pred, this] {return std::invoke(pred) || n_; });
+				}
+				--n_;
+			}
+
+			void signal() {
+				unique_lock<mutex> lock(mu_);
+				++n_;
+				cv_.notify_one();
+			}
+			void signalToall() {
+				unique_lock<mutex> lock(mu_);
+				++n_;
+				cv_.notify_all();
+			}
+		};
+
+		class FizzBuzz {
+		private:
+			int n;
+			int current;
+			Semaphore sem;
+		public:
+			FizzBuzz(int n) :sem(1) {
+				this->n = n;
+				current = 1;
+
+			}
+			void print(function<bool()> check, function<void()> printer)
+			{
+				while (current <= n)
+				{
+					while (!std::invoke(check))
+					{
+						if (current > n) break;
+						this_thread::yield();
+
+					}
+					sem.wait([&check, this] {return std::invoke(check) || current > n; });
+					//cout << current;
+					if (current <= n) printer();
+					++current;
+					sem.signalToall();
+					if (current > n) break;
+				}
+			}
+			// printFizz() outputs "fizz".
+			void fizz(function<void()> printFizz) {
+				print([this]() {return 0 == current % 3 && 0 != current % 5; }, printFizz);
+			}
+
+			// printBuzz() outputs "buzz".
+			void buzz(function<void()> printBuzz) {
+				print([this]() {return 0 != current % 3 && 0 == current % 5; }, printBuzz);
+			}
+
+			// printFizzBuzz() outputs "fizzbuzz".
+			void fizzbuzz(function<void()> printFizzBuzz) {
+				print([this]() {return 0 == current % 3 && 0 == current % 5; }, printFizzBuzz);
+			}
+
+			// printNumber(x) outputs "x", where x is an integer.
+			void number(function<void(int)> printNumber) {
+				print([this]() {return 0 != current % 3 && 0 != current % 5; }, [&printNumber, this]() {return printNumber(current); });
+			}
+		};
+
+		void test()
+		{
+			FizzBuzz obj(6);
+			auto PrintFizz = std::bind(&FizzBuzz::fizz, &obj, std::placeholders::_1);
+			auto PrintBuzz = std::bind(&FizzBuzz::buzz, &obj, std::placeholders::_1);
+			auto PrintFizzBuzz = std::bind(&FizzBuzz::fizzbuzz, &obj, std::placeholders::_1);
+			auto PrintNumber = std::bind(&FizzBuzz::number, &obj, std::placeholders::_1);
+			std::thread  thread1(PrintFizz, []() {std::cout << "fuzz"; });
+			std::thread thread2(PrintBuzz, []() {std::cout << "buzz"; });
+			std::thread thread3(PrintFizzBuzz, []() {std::cout << "Fuzzbuzz"; });
+			std::thread thread4(PrintNumber, [](int n) {std::cout << n; });
+			thread1.join();
+			thread2.join();
+			thread3.join();
+			thread4.join();
+		}
+	}
 int main()
 {
 	/*
