@@ -2596,6 +2596,42 @@ public:
 			thread4.join();
 		}
 	}
+
+	namespace solution1123
+	{
+		struct TreeNode {
+			int val;
+			TreeNode* left;
+			TreeNode* right;
+			TreeNode() : val(0), left(nullptr), right(nullptr) {}
+			TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+			TreeNode(int x, TreeNode* left, TreeNode* right) : val(x), left(left), right(right) {}
+
+		};
+
+		auto* find(TreeNode* root, int& height)
+		{
+			if (nullptr == root) return root;
+			int heightleft = 0;
+			int heightright = 0;
+			auto* pLeft = find(root->left, heightleft);
+			auto* pRight = find(root->right, heightright);
+			height = std::max(heightleft, heightright) + 1;
+			if (heightleft == heightright) return root;
+			if (heightleft > heightright) return pLeft;
+			return pRight;
+		}
+
+
+		TreeNode* lcaDeepestLeaves(TreeNode* root) {
+			if (nullptr == root) return root;
+			if (nullptr == root->left && nullptr == root->right) return root;
+			int height = 0;
+			return find(root, height);
+		}
+	}
+
+
 int main()
 {
 	/*
