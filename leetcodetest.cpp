@@ -2632,6 +2632,26 @@ public:
 	}
 
 
+namespace solution89
+{
+
+
+		vector<int> greyCode(int n)
+		{
+			if (0 == n) return { 0 };
+			if (1 == n) return { 0, 1 };
+			vector<int> ret = { 0, 1 };
+			ret.reserve(1 << n);
+			for (int i = 1; i < n; ++i)
+			{
+				vector<int> temp;
+				transform(ret.rbegin(), ret.rend(), back_inserter(temp), [&i](int n) {return n | (1 << i); });
+				copy(temp.begin(), temp.end(), back_inserter(ret));
+			}
+			return ret;
+		}
+	}
+
 int main()
 {
 	/*
