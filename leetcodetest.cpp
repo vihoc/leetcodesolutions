@@ -2651,6 +2651,38 @@ namespace solution89
 			return ret;
 		}
 	}
+//remove repeat string was waste too many time, but i like this way, i don't like recursive way, although that way is simple too.
+namespace solution22
+{
+	vector<string> generateParenthesis(int n) {
+		if (0 == n) return {};
+		if (1 == n) return { "()" };
+		vector<string>  ret = { "()" };
+	
+		vector<string> tmp;
+		for (int i = 2; i <= n; ++i)
+		{
+			for (auto tep : ret)
+			{
+				for (int index = 0; index < i; ++index)
+				{
+					string temp = tep;
+					temp.insert(index, "()");
+					if (tmp.end() == find(tmp.begin(), tmp.end(), temp))
+					{
+						tmp.emplace_back(temp);
+					}
+				}
+			}
+			ret.clear();
+			ret.reserve(tmp.size());
+			copy(tmp.begin(), tmp.end(), back_inserter(ret));
+			tmp.clear();
+		}
+		return ret;
+	}
+}
+
 
 int main()
 {
