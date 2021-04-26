@@ -2469,7 +2469,7 @@ public:
 	void test()
 	{
 		constexpr size_t times = 10;//n in the question: Total length of input string will be 3n, where 1 ¡Ü n ¡Ü 20.
-		vector<shared_ptr<thread>> threadpool;
+		vector<shared_ptr<thread>> threadpool; //you can use vector<thread> as well but the std::thread is NOT copyable, see blow
 		H2O obj;
 		for (size_t i = 0; i < times; ++i)
 		{
@@ -2482,7 +2482,7 @@ public:
 			threadpool.push_back(make_shared<thread>(thread(PrintHydrogen, []() {std::cout << "H"; })));
 			threadpool.push_back(make_shared<thread>(thread(PrintOxygen, []() {std::cout << "O"; })));
 		} 
-		for (auto t : threadpool)
+		for (auto t : threadpool) // for here  if u use vector<thread> you need to change code to for(auto& t : threadpool). the std::thread is moveable. ºÃÒ®
 		{
 			t->join();
 		}
@@ -2683,6 +2683,144 @@ namespace solution22
 	}
 }
 
+
+namespace solution48
+{
+	vector<vector<int>> generateVector(int n)
+	{
+		vector<vector<int>> ret;
+		for (int i = 0; i < n; i++)
+		{
+			ret.emplace_back(vector<int>(n));
+		}
+		return ret;
+	}
+	void fillVector(vector<vector<int>>& res)
+	{
+		//pass a empty vector like 
+		int i = 1;
+		for (auto& v : res)
+		{
+			int j = 1;
+			for_each(v.begin(), v.end(), [&i, &j](int& x) {x = i * j++; });
+			i++;
+		}
+
+	}
+
+	void printVector(vector<vector<int>>& res)
+	{
+		for (auto v : res)
+		{
+			copy(v.begin(), v.end(), ostream_iterator<int>(cout, "  "));
+			cout << endl;
+		}
+	}
+
+
+	void print90degreeVector(vector<vector<int>>& res)
+	{
+		size_t maxrow = res.size();
+		for (int i = 0; i < maxrow; ++i)
+		{
+			for (int j = maxrow; j > 0; j--)
+			{
+				cout << res[j - 1][i] << "  ";
+			}
+			cout << endl;
+		}
+	}
+	void rotate(vector<vector<int>>& matrix) {
+		if (1 == matrix.size() && 0 == matrix[0].size()) return;
+		size_t size = matrix.size();
+		for (int i = 0; i < size / 2; i++)
+		{
+			int low = i, high = size - i - 1;
+			for (int j = low; j < high; ++j)
+			{
+				int posrow = size - j - 1;
+				int poscol = size - i - 1;
+				swap(matrix[i][j], matrix[posrow][i]);
+
+				swap(matrix[posrow][i], matrix[poscol][posrow]);
+
+				swap(matrix[poscol][posrow], matrix[j][poscol]);
+
+			}
+		}
+
+	}
+
+}
+
+namespace solution48
+{
+	vector<vector<int>> generateVector(int n)
+	{
+		vector<vector<int>> ret;
+		for (int i = 0; i < n; i++)
+		{
+			ret.emplace_back(vector<int>(n));
+		}
+		return ret;
+	}
+	void fillVector(vector<vector<int>>& res)
+	{
+		//pass a empty vector like 
+		int i = 1;
+		for (auto& v : res)
+		{
+			int j = 1;
+			for_each(v.begin(), v.end(), [&i, &j](int& x) {x = i * j++; });
+			i++;
+		}
+
+	}
+
+	void printVector(vector<vector<int>>& res)
+	{
+		for (auto v : res)
+		{
+			copy(v.begin(), v.end(), ostream_iterator<int>(cout, "  "));
+			cout << endl;
+		}
+	}
+
+
+	void print90degreeVector(vector<vector<int>>& res)
+	{
+		size_t maxrow = res.size();
+		for (int i = 0; i < maxrow; ++i)
+		{
+			for (int j = maxrow; j > 0; j--)
+			{
+				cout << res[j - 1][i] << "  ";
+			}
+			cout << endl;
+		}
+	}
+	void rotate(vector<vector<int>>& matrix) {
+		if (1 == matrix.size() && 0 == matrix[0].size()) return;
+		size_t size = matrix.size();
+		for (int i = 0; i < size / 2; i++)
+		{
+			int low = i, high = size - i - 1;
+			for (int j = low; j < high; ++j)
+			{
+				int posrow = size - j - 1;
+				int poscol = size - i - 1;
+				swap(matrix[i][j], matrix[posrow][i]);
+
+				swap(matrix[posrow][i], matrix[poscol][posrow]);
+
+				swap(matrix[poscol][posrow], matrix[j][poscol]);
+
+			}
+		}
+
+	}
+
+}
 
 int main()
 {
@@ -3042,6 +3180,15 @@ int main()
 // solution321::maxNumber(v11, v12, 5);
 // solution321::maxNumber(v13, v14, 3);
 // solution321::maxNumber(v15, v16, 21);
+
+// vector<vector<int>> res = solution48::generateVector(5);
+// solution48::fillVector(res);
+// 
+// solution48::printVector(res);
+// solution48::print90degreeVector(res);
+// cout << "============= " << endl;
+// solution48::rotate(res);
+// solution48::printVector(res);
  ULONGLONG t2 = GetTickCount64();
 
 
