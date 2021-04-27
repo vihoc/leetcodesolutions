@@ -246,46 +246,6 @@ Trie* generate_trie(std::vector<std::string>& words)
 	return root;
 }
 
-//ÒŠ¹í´ú´a
-void checkTrie(std::vector<std::vector<char> >& board, Trie* tries,  int x, int y, std::vector<std::string>& ans)
-{
-
-
-	if (x < 0 || x > board[0].size() - 1)
-		return;
-	if (y < 0 || y > board.size() - 1)
-		return;
-	if (board[y][x] == '\0')
-		return;
-
-	auto* this_node = tries->next[board[y][x] - 'a'];
-	if (!this_node)
-		return;
-
-	if (!this_node->word.empty()) {
-		ans.emplace_back(std::move(this_node->word));
-		this_node->word.clear();
-
-		if (this_node->subtrees == 0) {
-			Trie* to_delete = nullptr;
-			std::swap(tries->next[board[y][x] - 'a'], to_delete);
-			tries->subtrees--;
-			delete to_delete;
-			return;
-		}
-	}
-
-	char temp = board[y][x];
-	board[y][x] = '\0';
-
-	checkTrie(board, this_node, x - 1, y, ans);
-	checkTrie(board, this_node, x + 1, y, ans);
-	checkTrie(board, this_node, x, y + 1, ans);
-	checkTrie(board, this_node, x, y - 1, ans);
-
-	board[y][x] = temp;
-
-}
 
 
 
@@ -2821,6 +2781,45 @@ namespace solution48
 	}
 
 }
+
+namespace solution29
+{
+	int divide(int dividend, int divisor) {
+
+		constexpr unsigned int max_int = INT_MAX;
+		constexpr unsigned int min_int = INT_MIN;
+		constexpr size_t bitsize = 33;
+		int sign = ((dividend < 0) ^ (divisor < 0)) ? -1 : 1;
+		int dividend_ = dividend > 0 ? dividend : -dividend;
+		int divisor_ = divisor > 0 ? divisor : -divisor;
+		unsigned int bit_num[bitsize];
+		unsigned int i = 0;
+		long long d = divisor_;
+		bit_num[i] = d;
+		while (d <= dividend_) {
+			d = d << 1;
+			bit_num[++i] = d;
+		}
+		i--;
+
+		unsigned int result = 0;
+		while (dividend_ >= divisor_) {
+			if (dividend_ >= bit_num[i]) {
+				dividend_ -= bit_num[i];
+				result += (1 << i);
+			}
+			else {
+				i--;
+			}
+		}
+
+		if (result > max_int && sign > 0) {
+			return max_int;
+		}
+		return (int)result * sign;
+	}
+}
+
 
 int main()
 {
