@@ -2820,6 +2820,35 @@ namespace solution29
 	}
 }
 
+namespace solution39
+{
+	void helper(vector<int>& candidates, vector<vector<int>>& result, vector<int>& tempresult, const int index, const int target)
+	{
+		if (target < 0) return;
+		if (0 == target)
+		{
+			result.emplace_back(tempresult);
+			return;
+		}
+		for (int pos = index; pos < candidates.size(); ++pos)
+		{
+			if ((pos > index) && (candidates[pos] == candidates[pos - 1])) continue;
+			if (candidates[pos] > target) return;
+			tempresult.push_back(candidates[pos]);
+			helper(candidates, result, tempresult, pos, target - candidates[pos]);
+			tempresult.pop_back();
+		}
+	}
+	vector<vector<int>> combinationSum(vector<int>& candidates, int target) {
+		vector<vector<int>> ret;
+		if (0 == candidates.size()) return ret;
+		sort(candidates.begin(), candidates.end());
+		vector<int> temp;
+		helper(candidates, ret, temp, 0, target);
+		return ret;
+	}
+}
+
 
 int main()
 {
