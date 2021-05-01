@@ -2850,6 +2850,55 @@ namespace solution39
 }
 
 
+namespace solution50
+{
+	double myPow(double x, int n) {
+		bool sign = false;
+		long long exp;
+		exp = n < 0 ? -static_cast<long long>(n) : static_cast<long long>(n);
+		sign = n < 0 ? true : false;
+		double result = 1.0;
+		while (exp)
+		{
+			if (exp & 1) result *= x;
+			exp >>= 1;
+			x *= x;
+		}
+		return sign ? 1 / result : result;
+	}
+}
+
+
+
+namespace solution54
+{
+	vector<int> spiralOrder(vector<vector<int>>& matrix) {
+		vector<int> ret;
+		int stepi = 1, stepj = 1;
+		int left = 0, right = matrix[0].size();
+		int  top = 0, bottum = matrix.size();
+		for (int r = 0, c = 0; r <= (bottum + 1) / 2 && c < (right + 1) / 2; ++r, ++c)
+		{
+			for (int i = c; i < right - c; i++) {
+				ret.emplace_back(matrix[r][i]);
+			}
+			//right
+			for (int i = r + 1; i < bottum - r; i++) {
+				ret.emplace_back(matrix[i][right - c - 1]);
+			}
+			//bottom
+			for (int i = right - c - 2; bottum - r - 1 > r && i >= c; i--) {
+				ret.emplace_back(matrix[bottum - r - 1][i]);
+			}
+			//left
+			for (int i = bottum - r - 2; right - c - 1 > c && i > r; i--) {
+				ret.emplace_back(matrix[i][c]);
+			}
+
+		}
+	}
+}
+
 int main()
 {
 	/*
