@@ -2899,6 +2899,30 @@ namespace solution54
 	}
 }
 
+namespace solution55
+{
+	bool canJump(vector<int>& nums) {
+		if (1 == nums.size())
+		{
+			return true;
+		}
+		size_t size = nums.size();
+		int right = 0;
+		for (int index = 0; index < size; ++index)
+		{
+			if (index <= right)
+			{
+				right = std::max(right, index + nums[index]);
+			}
+			else
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+}
+
 int main()
 {
 	/*
