@@ -2923,6 +2923,101 @@ namespace solution55
 	}
 }
 
+
+namespace solution57
+{
+	vector<vector<int>> insert(vector<vector<int>>& intervals, vector<int>& newInterval) {
+		constexpr int NAP = -1;
+		vector<vector<int>> ret;
+		if (0 == intervals.size())
+		{
+			ret.emplace_back(newInterval);
+			return ret;
+		}
+		int low = newInterval[0], high = newInterval[1];
+		int newintervallow = NAP, newIntervalHigh = NAP;
+		bool isinsert = false;
+
+		for (auto& element : intervals)
+		{
+			if (!isinsert && NAP != newintervallow && element[0] > newIntervalHigh)
+			{
+				ret.push_back({ newintervallow, newIntervalHigh });
+				isinsert = true;
+			}
+			if (!isinsert && element[0] > high)
+			{
+				ret.emplace_back(newInterval);
+				isinsert = true;
+			}
+			if (element[1] < low || element[0] > high)
+			{
+				ret.emplace_back(element);
+				continue;
+			}
+			if (NAP == newintervallow)
+			{
+				newintervallow = min(element[0], low);
+			}
+			else
+			{
+				newintervallow = min(element[0], newintervallow);
+
+			}
+			newIntervalHigh = max(element[1], high);
+		}
+		if (!isinsert)
+		{
+			if (NAP != newintervallow)ret.push_back({ newintervallow, newIntervalHigh });
+			else ret.push_back({ low, high });
+		}
+		return ret;
+	}
+	auto testcase()->void
+	{
+		vector<vector<int>> i1 = { {1,2},{6,9} };
+		vector<vector<int>> i2 = { {1,2}, {3,5},{6,7},{8,10},{12,16} };
+		vector<vector<int>> i3 = {};
+		vector<vector<int>> i4 = { {1,5} };
+		vector<vector<int>> i5 = { {1,5} };
+
+
+		vector<int> ni1 = { 2, 5 };
+		vector<int> ni2 = { 4, 8 };
+		vector<int> ni3 = { 5, 7 };
+		vector<int> ni4 = { 2, 3 };
+		vector<int> ni5 = { 2, 7 };
+		vector<int> ni6 = { 6, 8 };
+		vector<int> ni7 = { 100, 200 };
+		vector<int> ni8 = { 0, 0 };
+		vector<int> ni9 = { 4, 5 };
+		auto test = [](vector<vector<int>>&& data)
+		{
+			cout << "start print" << endl;
+			for (auto& d : data)
+			{
+				cout << "[";
+				for (auto& e : d)
+				{
+					cout << e << " ";
+				}
+				cout << "]" << endl;
+			}
+		};
+
+		test(solution57::insert(i1, ni1));
+		test(solution57::insert(i2, ni2));
+		test(solution57::insert(i3, ni3));
+		test(solution57::insert(i4, ni4));
+		test(solution57::insert(i5, ni5));
+		test(solution57::insert(i4, ni6));
+		test(solution57::insert(i1, ni8));
+		test(solution57::insert(i1, ni9));
+		test(solution57::insert(i2, ni6));
+		test(solution57::insert(i2, ni3));
+	}
+}
+
 int main()
 {
 	/*
