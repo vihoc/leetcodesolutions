@@ -3018,6 +3018,40 @@ namespace solution57
 	}
 }
 
+namespace solution59
+{
+	vector<vector<int>> generateMatrix(int n) {
+		if (1 == n) return { {1} };
+		vector<vector<int>> ret(n, vector<int>(n, 0));
+
+		int stepi = 1, stepj = 1;
+		int left = 0, right = n;
+		int  top = 0, bottum = n;
+		int count = 1;
+		for (int r = 0, c = 0; r <= (bottum + 1) / 2 && c < (right + 1) / 2; ++r, ++c)
+		{
+			for (int i = c; i < right - c; i++) {
+				ret[r][i] = count++;
+			}
+			//right
+			for (int i = r + 1; i < bottum - r; i++) {
+				ret[i][right - c - 1] = count++;
+			}
+			//bottom
+			for (int i = right - c - 2; bottum - r - 1 > r && i >= c; i--) {
+				ret[bottum - r - 1][i] = count++;
+			}
+			//left
+			for (int i = bottum - r - 2; right - c - 1 > c && i > r; i--) {
+				ret[i][c] = count++;
+			}
+
+		}
+		return ret;
+
+	}
+}
+
 int main()
 {
 	/*
