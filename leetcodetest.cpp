@@ -3052,6 +3052,48 @@ namespace solution59
 	}
 }
 
+namespace solution61
+{
+
+	struct ListNode {
+		int val;
+		ListNode* next;
+		ListNode() : val(0), next(nullptr) {}
+		ListNode(int x) : val(x), next(nullptr) {}
+		ListNode(int x, ListNode* next) : val(x), next(next) {}
+	};
+
+
+	ListNode* rotateRight(ListNode* head, int k) {
+		if (nullptr == head || nullptr == head->next || 0 == k) return head;
+
+		vector<int> val;
+		ListNode* current = head;
+		while (nullptr != current)
+		{
+			val.emplace_back(current->val);
+			current = current->next;
+		}
+		int realk = k;
+		if (k > val.size())
+		{
+			realk = k % val.size();
+		}
+		realk = val.size() - realk;
+		current = head;
+		for (int index = realk; nullptr != current; ++index)
+		{
+			if (index == val.size())
+			{
+				index = 0;
+			}
+			current->val = val[index];
+			current = current->next;
+		}
+		return head;
+	}
+}
+
 int main()
 {
 	/*
