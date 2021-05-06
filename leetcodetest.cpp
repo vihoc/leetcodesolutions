@@ -3094,6 +3094,40 @@ namespace solution61
 	}
 }
 
+namespace solution63
+{
+	int uniquePaths(int m, int n) {
+		vector<vector<int>> ret(m, vector<int>(n, 0));
+		int maxindex = max(m, n);
+		for (int init = 0; init < maxindex; ++init)
+		{
+			if (init < m) ret[init][0] = 1;
+			if (init < n) ret[0][init] = 1;
+		}
+		for (int indexm = 1; indexm < m; ++indexm)
+		{
+			for (int indexn = 1; indexn < n; ++indexn)
+			{
+				ret[indexm][indexn] = ret[indexm - 1][indexn] + ret[indexm][indexn - 1];
+			}
+		}
+		return ret[m - 1][n - 1];
+	}
+	/// <summary>
+	/// (max(n, m) *... *(x(n, m) -1) + (min(n, m) -1)) / (min(n, m))!
+	/// 
+	int uniquePaths2(int m, int n) {
+		long long ret = 1;
+		int tempm = min(m, n);
+		int tempn = max(m, n);
+		for (int index = 1; index < tempm; ++index, ++tempn)
+		{
+			ret = ret * tempn / index;
+		}
+		return ret;
+	}
+}
+
 int main()
 {
 	/*
