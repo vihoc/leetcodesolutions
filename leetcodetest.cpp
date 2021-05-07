@@ -3094,7 +3094,8 @@ namespace solution61
 	}
 }
 
-namespace solution63
+
+namespace solution62
 {
 	int uniquePaths(int m, int n) {
 		vector<vector<int>> ret(m, vector<int>(n, 0));
@@ -3114,7 +3115,7 @@ namespace solution63
 		return ret[m - 1][n - 1];
 	}
 	/// <summary>
-	/// (max(n, m) *... *(x(n, m) -1) + (min(n, m) -1)) / (min(n, m))!
+	/// (max(n, m) -1 + 1 *... *(max(n, m) -1) + (min(n, m) -1)) / (min(n, m))!
 	/// 
 	int uniquePaths2(int m, int n) {
 		long long ret = 1;
@@ -3125,6 +3126,106 @@ namespace solution63
 			ret = ret * tempn / index;
 		}
 		return ret;
+	}
+}
+
+
+namespace solution63
+{
+	//worst algorithm,
+	int uniquePathsWithObstacles(vector<vector<int>>& obstacleGrid) {
+		if (0 == obstacleGrid.size()) return 0;
+		if (1 == obstacleGrid.size() && 1 == obstacleGrid[0].size()) return !obstacleGrid[0][0];
+		if (1 == obstacleGrid[0][0]) return 0;
+		int row = obstacleGrid.size();
+		int col = obstacleGrid[0].size();
+
+		vector<vector<unsigned int>> ret(row, vector<unsigned int>(col, 0));
+		ret[0][0] = 1;
+
+		for (int indexrow = 1; indexrow < row; ++indexrow)
+		{
+			if (obstacleGrid[indexrow][0]) break;
+			ret[indexrow][0] = ret[indexrow - 1][0];
+		}
+
+		for (int indexcol = 1; indexcol < col; ++indexcol)
+		{
+			if (obstacleGrid[0][indexcol]) break;
+			ret[0][indexcol] = ret[0][indexcol - 1];
+		}
+		for (int indexrow = 1; indexrow < row; ++indexrow)
+		{
+			for (int indexcol = 1; indexcol < col; ++indexcol)
+			{
+				if (obstacleGrid[indexrow][indexcol]) continue;
+				ret[indexrow][indexcol] = ret[indexrow][indexcol - 1] + ret[indexrow - 1][indexcol];
+			}
+		}
+		return ret[row - 1][col - 1];
+
+	}
+
+	//fast than 100% in leetcode.
+	int uniquePathsWithObstacles_fast(vector<vector<int>>& obstacleGrid) {
+		if (0 == obstacleGrid.size()) return 0;
+		if (1 == obstacleGrid.size() && 1 == obstacleGrid[0].size()) return !obstacleGrid[0][0];
+		if (1 == obstacleGrid[0][0]) return 0;
+		int row = obstacleGrid.size();
+		int col = obstacleGrid[0].size();
+
+		vector<vector<unsigned int>> ret(row, vector<unsigned int>(col, 0));
+		ret[0][0] = 1;
+		int maxlen = std::max(row, col);
+		for (int index = 1; index < maxlen; ++index)
+		{
+			if (index < row)
+			{
+				if (0 == obstacleGrid[index][0])
+					ret[index][0] = ret[index - 1][0];
+			}
+			if (index < col)
+			{
+				if (0 == obstacleGrid[0][index])
+					ret[0][index] = ret[0][index - 1];
+			}
+		}
+		for (int indexrow = 1; indexrow < row; ++indexrow)
+		{
+			for (int indexcol = 1; indexcol < col; ++indexcol)
+			{
+				if (obstacleGrid[indexrow][indexcol]) continue;
+				ret[indexrow][indexcol] = ret[indexrow][indexcol - 1] + ret[indexrow - 1][indexcol];
+			}
+		}
+		return ret[row - 1][col - 1];
+
+	}
+	//better algorithm on storage. but not that fast
+	int uniquePathsWithObstacles2(vector<vector<int>>& obstacleGrid) {
+		if (0 == obstacleGrid.size()) return 0;
+		if (1 == obstacleGrid.size() && 1 == obstacleGrid[0].size()) return !obstacleGrid[0][0];
+		if (1 == obstacleGrid[0][0]) return 0;
+		int row = obstacleGrid.size();
+		int col = obstacleGrid[0].size();
+		vector<int> ret(col);
+		ret[0] = 1;
+		for (int indexrow = 0; indexrow < row; ++indexrow)
+		{
+			for (int indexcol = 0; indexcol < col; ++indexcol)
+			{
+				if (obstacleGrid[indexrow][indexcol])
+				{
+					ret[indexcol] = 0;
+					continue;
+				}
+				if (0 == indexcol) continue;
+				if (1 == obstacleGrid[indexrow][indexcol]) continue;
+				ret[indexcol] += ret[indexcol - 1];
+
+			}
+		}
+		return ret.back();
 	}
 }
 
