@@ -2235,7 +2235,7 @@ namespace Csolution1115 //concurrency
 	private:
 		int n;
 		volatile bool printyet;
-		std::mutex mut;
+		mutable std::mutex mut;
 		//std::mutex mut2;
 	public:
 		FooBar(int n) {
@@ -2288,10 +2288,11 @@ namespace Csolution1116
 {
 	class ZeroEvenOdd {
 	private:
-		int n;
-		std::mutex mut;
 		bool status;
 		bool iseven;
+		int n;
+		mutable std::mutex mut;
+
 	public:
 		ZeroEvenOdd(int n) {
 			this->n = n;
@@ -2355,8 +2356,8 @@ namespace Csolution1117
 	class H2O {
 		condition_variable cv_H;
 		condition_variable cv_O;
-		mutex mutexH;
-		mutex mutexO;
+		mutable mutex mutexH;
+		mutable mutex mutexO;
 
 		int countH;
 
@@ -2454,7 +2455,7 @@ public:
 		class Semaphore {
 		private:
 			int n_;
-			mutex mu_;
+			mutable mutex mu_;
 			condition_variable cv_;
 
 		public:
