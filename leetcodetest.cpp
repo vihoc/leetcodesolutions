@@ -3252,6 +3252,32 @@ namespace solution64
 		}
 		return grid.back().back();
 	}
+
+	int minPathSum2(vector<vector<int>>& grid) {
+		int row = grid.size();
+		int col = grid[0].size();
+		if (0 == row || 0 == col) return 0;
+		if (1 == row && 1 == col) return grid[0][0];
+		vector<int> ret(col, 0);
+		ret[0] = grid[0][0];
+		for (int index = 1; index < col; ++index)
+		{
+			ret[index] = ret[index - 1] + grid[0][index];
+		}
+		for (int indexrow = 1; indexrow < row; ++indexrow)
+		{
+			for (int indexcol = 0; indexcol < col; ++indexcol)
+			{
+				if (0 == indexcol)
+				{
+					ret[indexcol] += grid[indexrow][0];
+					continue;
+				}
+				ret[indexcol] = grid[indexrow][indexcol] + std::min(ret[indexcol], ret[indexcol - 1]);
+			}
+		}
+		return ret.back();
+	}
 }
 
 int main()
