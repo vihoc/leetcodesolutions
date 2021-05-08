@@ -3230,6 +3230,30 @@ namespace solution63
 	}
 }
 
+namespace solution64
+{
+	int minPathSum(vector<vector<int>>& grid) {
+		int row = grid.size();
+		int col = grid[0].size();
+		if (0 == row || 0 == col) return 0;
+		if (1 == row && 1 == col) return grid[0][0];
+		int maxlenth = std::max(row, col);
+		for (int index = 1; index < maxlenth; ++index)
+		{
+			if (index < col) grid[0][index] += grid[0][index - 1];
+			if (index < row) grid[index][0] += grid[index - 1][0];
+		}
+		for (int indexrow = 1; indexrow < row; ++indexrow)
+		{
+			for (int indexcol = 1; indexcol < col; ++indexcol)
+			{
+				grid[indexrow][indexcol] += std::min(grid[indexrow - 1][indexcol], grid[indexrow][indexcol - 1]);
+			}
+		}
+		return grid.back().back();
+	}
+}
+
 int main()
 {
 	/*
