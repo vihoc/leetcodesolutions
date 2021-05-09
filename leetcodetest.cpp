@@ -3280,6 +3280,57 @@ namespace solution64
 	}
 }
 
+namespace solution71
+{
+	string simplifyPath(string path) {
+		stringstream ss(path);
+		string result;
+		string tempresult;
+		vector<string> tempelem;
+		while (std::getline(ss, tempresult, '/'))
+		{
+			tempelem.emplace_back(tempresult);
+		}
+
+		int ignor = 0;
+		for (auto&& riter = tempelem.rbegin(); riter != tempelem.rend(); ++riter)
+		{
+			auto&& elem = *riter;
+			if ("" == elem || "." == elem) continue;
+			if (".." == elem)
+			{
+				ignor++;
+				continue;
+			}
+			if (ignor > 0)
+			{
+				ignor--;
+				continue;
+			}
+			result = "/" + elem + result;
+		}
+		return result.size() ? result : "/";
+	}
+
+	string simplifyPath2(string path) {
+		stringstream ss(path);
+		string result;
+		string tempresult;
+		vector<string> tempelem;
+		while (std::getline(ss, tempresult, '/'))
+		{
+			if ("" == tempresult || "." == tempresult) continue;
+			if (".." == tempresult && !tempelem.empty()) tempelem.pop_back();
+			else if (".." != tempresult) tempelem.emplace_back(tempresult);
+		}
+		for (auto&& e : tempelem)
+		{
+			result += "/" + e;
+		}
+		return result.size() ? result : "/";
+	}
+}
+
 int main()
 {
 	/*
