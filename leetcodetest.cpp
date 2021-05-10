@@ -3331,6 +3331,39 @@ namespace solution71
 	}
 }
 
+namespace solution73
+{
+	void setpos(vector<vector<int>>& matrix, int x, int y, const int& row, const int& col)
+	{
+
+		int bound = max(row, col);
+		for (int index = 0; index < bound; index++)
+		{
+			if (index < row)matrix[index][y] = 0;
+			if (index < col)matrix[x][index] = 0;
+
+		}
+	}
+	void setZeroes(vector<vector<int>>&& matrix) {
+		int row = matrix.size();
+		int col = matrix[0].size();
+		if (1 == row && 1 == col) return;
+		vector<pair<int, int>> key;
+		for (int indexrow = 0; indexrow < row; indexrow++)
+		{
+			for (int indexcol = 0; indexcol < col; indexcol++)
+			{
+				if (0 == matrix[indexrow][indexcol]) key.emplace_back(make_pair(indexrow, indexcol));
+			}
+		}
+		for (auto&& e : key)
+		{
+			setpos(matrix, e.first, e.second, row, col);
+		}
+		return;
+	}
+}
+
 int main()
 {
 	/*
