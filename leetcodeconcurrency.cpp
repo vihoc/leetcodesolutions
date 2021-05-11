@@ -335,3 +335,131 @@ public:
 			thread4.join();
 		}
 	}
+
+
+	namespace Csolution1226
+	{
+		struct mutex_wrapper : std::mutex
+		{
+			mutex_wrapper() = default;
+			mutex_wrapper(mutex_wrapper const&) noexcept : std::mutex() {}
+			bool operator==(mutex_wrapper const& other) noexcept { return this == &other; }
+		};
+
+		constexpr int maxphilosopher = 5;
+		class DiningPhilosophers {
+		public:
+			DiningPhilosophers() :lock_list(5) {
+
+			}
+
+			void wantsToEat(int philosopher,
+				function<void()> pickLeftFork,
+				function<void()> pickRightFork,
+				function<void()> eat,
+				function<void()> putLeftFork,
+				function<void()> putRightFork)
+			{
+				int lefthand = philosopher;
+				int righthand = (philosopher + 1) % maxphilosopher;
+				//std::try_lock(lock_list[lefthand], lock_list[righthand]);
+				pickRightFork();
+				pickLeftFork();
+
+				eat();
+				putLeftFork();
+				//lock_list[lefthand].unlock();
+				putRightFork();
+				//lock_list[righthand].unlock();
+			}
+		private:
+			std::vector<std::mutex> lock_list;
+
+		};
+
+		enum fork
+		{
+			none,
+			left,
+			right
+		};
+
+		enum move
+		{
+			nonemove,
+			take,
+			put,
+			eat
+		};
+		constexpr int eatTimes = 1;
+		constexpr int philosopherNum = 5;
+		//NOTE: here is a vs's bug 
+		//those 5 function :pickleftfork ... will output the same i which is the last index num.  
+		// for example:[4,1,1][4,2,1][4,0,3][4,1,2][4,2,2][4,1,1]...  the output alway be 4
+		//this code works fine in g++ ( g++-7 try.cpp -std=c++17 -lpthread)
+		//so if try to test this code in vs, stay calm.
+		//TODO
+		void test()
+		{
+
+			vector<thread> threadpool;
+			std::mutex m;
+			for (int index = 0; index < philosopherNum; ++index)
+			{
+				int i = index;
+				auto pickleftfork = [=, &m]()
+				{
+					std::lock_guard<std::mutex> lk(m);
+					std::cout << "[" << i << "," << fork::left << "," << move::take << "]";
+				};
+				auto pickrightfork = [=, &m]()
+				{
+					std::lock_guard<std::mutex> lk(m);
+					std::cout << "[" << i << "," << fork::right << "," << move::take << "]";
+				};
+				auto putleftfork = [=, &m]()
+				{
+					std::lock_guard<std::mutex> lk(m);
+					std::cout << "[" << i << "," << fork::left << "," << move::put << "]";
+				};
+				auto putrightfork = [=, &m]()
+				{
+					std::lock_guard<std::mutex> lk(m);
+					std::cout << "[" << i << "," << fork::right << "," << move::put << "]";
+				};
+				auto eat = [=, &m]()
+				{
+					std::lock_guard<std::mutex> lk(m);
+					std::cout << "[" << i << "," << fork::none << "," << move::eat << "]";
+				};
+				DiningPhilosophers Philosopher;
+				auto run = [&, i]()
+				{
+					int temp = eatTimes;
+					while (temp-- > 0)
+					{
+						try {
+							Philosopher.wantsToEat(i, pickleftfork, pickrightfork, eat, putleftfork, putrightfork);
+						}
+						catch (exception& e)
+						{
+							cout << e.what();
+						}
+					}
+				};
+				threadpool.emplace_back(thread(run));
+			}
+			cout << "[";
+			for (auto& t : threadpool)
+			{
+				try {
+					if (t.joinable()) t.join();
+				}
+				catch (exception& e)
+				{
+					cout << e.what();
+				}
+			}
+			cout << "]";
+		}
+	}
