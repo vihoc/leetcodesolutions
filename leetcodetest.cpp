@@ -3059,6 +3059,38 @@ namespace solution73
 	}
 }
 
+namespace solution74
+{
+	bool searchMatrix(vector<vector<int>>&& matrix, int target) {
+		int row = matrix.size();
+		int col = matrix[0].size();
+		if (row == 1 && col == 1) return target == matrix[0][0];
+		if (matrix[0][0] > target || target > matrix.back().back()) return false;
+		int begin = 0, end = row;
+		int index;
+
+		while (begin != end)
+		{
+			index = (begin + end) / 2;
+			if (target < matrix[index].back()) end = index;
+			else if (target > matrix[index].back()) begin = index + 1;
+			else return true;
+		}
+		//for()
+		const vector<int>& des = matrix[begin];
+		begin = 0; end = col;
+		while (begin != end)
+		{
+			index = (begin + end) / 2;
+			if (target < des[index]) end = index;
+			else if (target > des[index]) begin = index + 1;
+			else return true;
+		}
+		return false;
+
+	}
+}
+
 int main()
 {
 	/*
