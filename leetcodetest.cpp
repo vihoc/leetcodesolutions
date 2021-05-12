@@ -3096,6 +3096,49 @@ namespace solution74
 	}
 }
 
+namespace solution77
+{
+	void helper(vector<vector<int>>& ret, vector<int>& temp, int n, int k, int count, int pos)
+	{
+		if (count == k)
+		{
+			ret.emplace_back(temp);
+			return;
+		}
+
+		if (pos > n) return;
+
+		temp.emplace_back(pos);
+		helper(ret, temp, n, k, count + 1, pos + 1);
+		temp.pop_back();
+		helper(ret, temp, n, k, count, pos + 1);
+	}
+
+
+	vector<vector<int>> combine(int n, int k) {
+		if (1 == k && 1 == n) return { {1} };
+		vector<vector<int>> ret;
+		vector<int> temp;
+		//here is a sample for naive optimize, the code run slower
+		// 		if (n == k)
+		// 		{
+		// 			vector<int> temp;
+		// 			
+		// 			for (int index = 1; index <= n; ++index) temp.emplace_back(index);
+		// 			ret.emplace_back(temp);
+		// 			
+		// 		}
+
+
+		ret.reserve(2 * k);
+
+		temp.reserve(k);
+
+		helper(ret, temp, n, k, 0, 1);
+		return ret;
+	}
+}
+
 int main()
 {
 	/*
