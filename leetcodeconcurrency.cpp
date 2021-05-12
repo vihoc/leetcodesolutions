@@ -4,7 +4,7 @@
 //the declare is in file:leetcode.test.cpp from line 2235 to 2252
 //for vs code. u just need add this file into your project.
 //for gcc u need add this filename and -pthread to ur compile command
-//g++7 -std=c++17 leetcodetest.cpp [leetcodeconcurrency.cpp -pthread] -o your_output_binary
+//g++-7 -std=c++17 leetcodetest.cpp [leetcodeconcurrency.cpp -lpthread] -o your_output_binary
 
 
 namespace Csolution1115 //concurrency
@@ -362,15 +362,15 @@ public:
 			{
 				int lefthand = philosopher;
 				int righthand = (philosopher + 1) % maxphilosopher;
-				//std::try_lock(lock_list[lefthand], lock_list[righthand]);
+				std::try_lock(lock_list[lefthand], lock_list[righthand]);
 				pickRightFork();
 				pickLeftFork();
 
 				eat();
 				putLeftFork();
-				//lock_list[lefthand].unlock();
+				lock_list[lefthand].unlock();
 				putRightFork();
-				//lock_list[righthand].unlock();
+				lock_list[righthand].unlock();
 			}
 		private:
 			std::vector<std::mutex> lock_list;
@@ -393,8 +393,8 @@ public:
 		};
 		constexpr int eatTimes = 1;
 		constexpr int philosopherNum = 5;
-		//NOTE: here is a vs's bug 
-		//those 5 function :pickleftfork ... will output the same i which is the last index num.  
+		//NOTE: if u try this function, u will trigger a vs's bug 
+		//those 5 lambda :pickleftfork ... will output the same i which is the last index num.  
 		// for example:[4,1,1][4,2,1][4,0,3][4,1,2][4,2,2][4,1,1]...  the output alway be 4
 		//this code works fine in g++ ( g++-7 try.cpp -std=c++17 -lpthread)
 		//so if try to test this code in vs, stay calm.

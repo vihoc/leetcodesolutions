@@ -2236,21 +2236,26 @@ namespace Csolution1115
 {
 	void test();
 }
+
 namespace Csolution1116
 {
 	void test();
 }
 
-
 namespace Csolution1117
 {
 	void test();
 }
+
 namespace Csolution1195
 {
 	void test();
 }
 
+namespace Csolution1226
+{
+	void test();
+}
 
 //end of declaration
 	namespace solution1123
