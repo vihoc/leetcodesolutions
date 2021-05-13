@@ -3139,6 +3139,40 @@ namespace solution77
 	}
 }
 
+namespace solution78
+{
+	vector<vector<int>> subsets(vector<int>&& nums) {
+		vector<vector<int>> ret;
+		vector<int> temp;
+		if (1 == nums.size())
+		{
+			ret.emplace_back(temp);
+			ret.emplace_back(nums);
+			return ret;
+		}
+
+		function<void(int, int)> helper;
+		helper = [&temp, &ret, &nums, &helper](int cur, int length) ->void
+		{
+			if (cur == length)
+			{
+				ret.emplace_back(temp);
+				return;
+			}
+			if (cur > length) return;
+			temp.emplace_back(nums[cur]);
+			helper(cur + 1, length);
+			temp.pop_back();
+			helper(cur + 1, length);
+
+		};
+
+		helper(0, nums.size());
+
+		return ret;
+	}
+}
+
 int main()
 {
 	/*
