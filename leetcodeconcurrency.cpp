@@ -339,17 +339,11 @@ public:
 
 	namespace Csolution1226
 	{
-		struct mutex_wrapper : std::mutex
-		{
-			mutex_wrapper() = default;
-			mutex_wrapper(mutex_wrapper const&) noexcept : std::mutex() {}
-			bool operator==(mutex_wrapper const& other) noexcept { return this == &other; }
-		};
-
 		constexpr int maxphilosopher = 5;
+		constexpr int locksuccess = -1;
 		class DiningPhilosophers {
 		public:
-			DiningPhilosophers() :lock_list(5) {
+			DiningPhilosophers() :lock_list(maxphilosopher) {
 
 			}
 
@@ -362,16 +356,24 @@ public:
 			{
 				int lefthand = philosopher;
 				int righthand = (philosopher + 1) % maxphilosopher;
-				std::try_lock(lock_list[lefthand], lock_list[righthand]);
-				pickRightFork();
-				pickLeftFork();
 
-				eat();
-				putLeftFork();
-				lock_list[lefthand].unlock();
-				putRightFork();
-				lock_list[righthand].unlock();
+				while (true)
+				{
+					if (locksuccess == std::try_lock(lock_list[lefthand], lock_list[righthand]))
+					{
+						pickRightFork();
+						pickLeftFork();
+						eat();
+						putLeftFork();
+						lock_list[lefthand].unlock();
+						putRightFork();
+						lock_list[righthand].unlock();
+						break;
+					}
+					else std::this_thread::yield();
+				}
 			}
+
 		private:
 			std::vector<std::mutex> lock_list;
 
@@ -393,17 +395,18 @@ public:
 		};
 		constexpr int eatTimes = 1;
 		constexpr int philosopherNum = 5;
-		//NOTE: if u try this function, u will trigger a vs's bug 
-		//those 5 lambda :pickleftfork ... will output the same i which is the last index num.  
+		//NOTE: here is a vs's bug 
+		//those 5 function :pickleftfork ... will output the same i which is the last index num.  
 		// for example:[4,1,1][4,2,1][4,0,3][4,1,2][4,2,2][4,1,1]...  the output alway be 4
 		//this code works fine in g++ ( g++-7 try.cpp -std=c++17 -lpthread)
 		//so if try to test this code in vs, stay calm.
-		//TODO
+		//TODO i supose the grab fork function must have a lock inside ,otherwise this problem will be easy.
 		void test()
 		{
 
 			vector<thread> threadpool;
 			std::mutex m;
+			DiningPhilosophers Philosopher;
 			for (int index = 0; index < philosopherNum; ++index)
 			{
 				int i = index;
@@ -432,7 +435,7 @@ public:
 					std::lock_guard<std::mutex> lk(m);
 					std::cout << "[" << i << "," << fork::none << "," << move::eat << "]";
 				};
-				DiningPhilosophers Philosopher;
+
 				auto run = [&, i]()
 				{
 					int temp = eatTimes;
@@ -447,7 +450,7 @@ public:
 						}
 					}
 				};
-				threadpool.emplace_back(thread(run));
+				threadpool.push_back(thread(run));
 			}
 			cout << "[";
 			for (auto& t : threadpool)
