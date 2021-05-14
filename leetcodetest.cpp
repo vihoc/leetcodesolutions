@@ -3173,6 +3173,43 @@ namespace solution78
 	}
 }
 
+namespace solution80
+{
+	int removeDuplicates(vector<int>&& nums) {
+		int pos = 0;
+		int length = nums.size();
+		int count = 0;
+		int newlenth = 0;
+		int last = nums[0];
+		for (int index = 0; index < length; ++index)
+		{
+
+			if (nums[index] != last)
+			{
+				count = 1;
+				last = nums[index];
+			}
+			else
+			{
+
+				if (++count > 2)
+				{
+					continue;
+				}
+
+			}
+			nums[pos++] = nums[index];
+			newlenth++;
+		}
+		//unnecessary
+		auto iter = nums.begin();
+		std::advance(iter, newlenth);
+		nums.erase(iter, nums.end());
+		//end of unnecessary
+		return newlenth;
+	}
+}
+
 int main()
 {
 	/*
