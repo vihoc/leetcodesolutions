@@ -30,6 +30,94 @@
 #include <condition_variable>
 
 using namespace std;
+
+//few functions may speed up your test
+namespace testhelper
+{
+
+	//generate a list of node
+	//u may use like this :
+	//testhelper::printListNode(solution82::deleteDuplicates(testhelper::generateList<solution82::ListNode, vector<int>>({ 1,1 })));
+	template <typename Node, typename container>
+	Node* generateList(container&& list)
+	{
+		copy(begin(list), end(list), ostream_iterator<int>(cout, " "));
+		cout << endl;
+		Node* head = new Node(0);
+		Node* next = head;
+		for (int& a : list)
+		{
+			next->next = new Node(a);
+			next = next->next;
+		}
+		next = head->next;
+		delete head;
+		return next;
+	}
+	template <typename Node>
+	void printListNode(Node* p)
+	{
+		std::cout << "[";
+		while (p)
+		{
+			std::cout << p->val;
+			if (p->next)
+				std::cout << ",";
+			p = p->next;
+		}
+		std::cout << "]" << std::endl;
+	}
+
+
+	//TODO, treenode.
+
+	vector<vector<int>> generateVector(int n)
+	{
+		vector<vector<int>> ret;
+		for (int i = 0; i < n; i++)
+		{
+			ret.emplace_back(vector<int>(n));
+		}
+		return ret;
+	}
+	void fillVector(vector<vector<int>>& res)
+	{
+		//pass a empty vector like 
+		int i = 1;
+		for (auto& v : res)
+		{
+			int j = 1;
+			for_each(v.begin(), v.end(), [&i, &j](int& x) {x = i * j++; });
+			i++;
+		}
+
+	}
+
+	void printVector(vector<vector<int>>& res)
+	{
+		for (auto v : res)
+		{
+			copy(v.begin(), v.end(), ostream_iterator<int>(cout, "  "));
+			cout << endl;
+		}
+	}
+
+
+	void print90degreeVector(vector<vector<int>>& res)
+	{
+		size_t maxrow = res.size();
+		for (int i = 0; i < maxrow; ++i)
+		{
+			for (int j = maxrow; j > 0; j--)
+			{
+				cout << res[j - 1][i] << "  ";
+			}
+			cout << endl;
+		}
+	}
+
+}
+
 namespace solution15
 {
 	std::vector<std::vector<int>> threeSum(std::vector<int>& nums)
@@ -2347,50 +2435,6 @@ namespace solution22
 
 namespace solution48
 {
-	vector<vector<int>> generateVector(int n)
-	{
-		vector<vector<int>> ret;
-		for (int i = 0; i < n; i++)
-		{
-			ret.emplace_back(vector<int>(n));
-		}
-		return ret;
-	}
-	void fillVector(vector<vector<int>>& res)
-	{
-		//pass a empty vector like 
-		int i = 1;
-		for (auto& v : res)
-		{
-			int j = 1;
-			for_each(v.begin(), v.end(), [&i, &j](int& x) {x = i * j++; });
-			i++;
-		}
-
-	}
-
-	void printVector(vector<vector<int>>& res)
-	{
-		for (auto v : res)
-		{
-			copy(v.begin(), v.end(), ostream_iterator<int>(cout, "  "));
-			cout << endl;
-		}
-	}
-
-
-	void print90degreeVector(vector<vector<int>>& res)
-	{
-		size_t maxrow = res.size();
-		for (int i = 0; i < maxrow; ++i)
-		{
-			for (int j = maxrow; j > 0; j--)
-			{
-				cout << res[j - 1][i] << "  ";
-			}
-			cout << endl;
-		}
-	}
 	void rotate(vector<vector<int>>& matrix) {
 		if (1 == matrix.size() && 0 == matrix[0].size()) return;
 		size_t size = matrix.size();
@@ -3207,6 +3251,60 @@ namespace solution80
 		nums.erase(iter, nums.end());
 		//end of unnecessary
 		return newlenth;
+	}
+}
+
+namespace solution82
+{
+	struct ListNode {
+		int val;
+		ListNode* next;
+		ListNode() : val(0), next(nullptr) {}
+		ListNode(int x) : val(x), next(nullptr) {}
+		ListNode(int x, ListNode* next) : val(x), next(next) {}
+
+	};
+
+	ListNode* deleteDuplicates(ListNode* head) {
+		if (nullptr == head || nullptr == head->next) return head;
+
+		ListNode* cur = head;
+		ListNode* pos = head;
+		ListNode* prev = NULL;
+		ListNode* last = cur;
+		bool isduplicate = false;
+		while (cur)
+		{
+			if (last->val != cur->val)
+			{
+
+				last = cur;
+				if (isduplicate) isduplicate = false;
+				else
+				{
+					prev = pos;
+					pos = (pos)->next;
+				}
+
+				(pos)->val = cur->val;
+
+				cout << "exchange :" << (pos)->val << " " << cur->val << endl;
+
+			}
+			else
+				if (cur != last)
+					isduplicate = true;
+
+			cur = cur->next;
+
+		}
+		if (isduplicate)
+		{
+			if (nullptr != prev) prev->next = nullptr;
+			else head = nullptr;
+		}
+		if (nullptr != pos && nullptr != (pos)->next) (pos)->next = nullptr;
+		return head;
 	}
 }
 
