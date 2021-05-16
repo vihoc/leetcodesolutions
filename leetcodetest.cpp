@@ -3308,6 +3308,49 @@ namespace solution82
 	}
 }
 
+namespace solution86
+{
+	struct ListNode {
+		int val;
+		ListNode* next;
+		ListNode() : val(0), next(nullptr) {}
+		ListNode(int x) : val(x), next(nullptr) {}
+		ListNode(int x, ListNode* next) : val(x), next(next) {}
+	};
+
+	ListNode* partition(ListNode* head, int x) {
+		if (nullptr == head || nullptr == head->next) return head;
+		ListNode* cur = head;
+		ListNode* cur2 = head;
+		vector<int> data;
+		
+		while (cur)
+		{
+			if (cur->val >= x) data.emplace_back(cur->val);
+			else
+			{
+				cur2->val = cur->val;
+				cur2 = cur2->next;
+			}
+			cur = cur->next;
+		}
+		for (auto& e : data)
+		{
+			if (cur2)
+			{
+				cur2->val = e;
+				cur2 = cur2->next;
+			}
+			else
+			{
+				cout << "opps" << endl;
+			}
+		}
+		return head;
+	}
+
+}
+
 int main()
 {
 	/*
