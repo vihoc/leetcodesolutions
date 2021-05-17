@@ -31,7 +31,7 @@
 
 using namespace std;
 
-//few functions may speed up your test
+//few functions may speed up your test for check result
 namespace testhelper
 {
 
@@ -115,7 +115,42 @@ namespace testhelper
 			cout << endl;
 		}
 	}
+	//打印数组,
+	void printVectorResult(vector<int>&& res)
+	{
+		cout << '[';
+		if (0 != res.size())
+		{
+			copy(res.begin(), res.end() - 1, ostream_iterator<int>(cout, ", "));
+			cout << res.back();
+		}
+		cout << "]";
 
+	}
+	//打印2d数组, 
+	// testhelper::printVectorResult2d(testhelper::testRvalue<vector<vector<int>>, vector<int>>(solution90::subsetsWithDup, { }));
+	// easy to check result
+	void printVectorResult2d(vector<vector<int>>&& res)
+	{
+		cout << "{";
+		for (auto&& itor = res.begin(); itor != res.end() - 1; ++itor)
+		{
+
+			printVectorResult(std::forward<vector<int>>(*itor));
+			cout << ", ";
+		}
+		printVectorResult(std::forward<vector<int>>(res.back()));
+		cout << "}" << endl;
+	}
+
+	// u may use like this
+	//testhelper::testRvalue<vector<vector<int>>, vector<int>>(solution90::subsetsWithDup, { });
+	//so u don't think the variable name
+	template<typename RET, typename SRC, typename CALL>
+	RET testRvalue(CALL callback, SRC&& vec)
+	{
+		return callback(vec);
+	}
 }
 
 namespace solution15
@@ -3350,6 +3385,51 @@ namespace solution86
 	}
 
 }
+
+namespace solution90
+{
+	typedef vector<int> srctype;
+	typedef vector<vector<int>> rettype;
+	vector<vector<int>> subsetsWithDup(vector<int>& nums) {
+		vector<vector<int>> ret;
+		ret.reserve(nums.size() * 2);
+		if (0 == nums.size())
+		{
+			//ret.emplace_back(vector<int>({}));
+			ret = { {} };
+		}
+		else if (1 == nums.size())
+		{
+			ret = { {} , nums };
+		}
+		else
+		{
+			function<void(int, int)> helper;
+			vector<int> temp;
+			helper = [&helper, &ret, &nums, &temp](int pos, int length)
+			{
+				if (pos == length)
+				{
+					ret.emplace_back(temp);
+					return;
+				}
+				if (pos > length) return;
+				temp.emplace_back(nums[pos]);
+				helper(pos + 1, length);
+				temp.pop_back();
+				int index = pos + 1;
+				while (index < nums.size() && nums[pos] == nums[index]) index++;
+				helper(index, length);
+
+			};
+			sort(nums.begin(), nums.end());
+			helper(0, nums.size());
+
+		}
+		return ret;
+	}
+}
+
 
 int main()
 {
