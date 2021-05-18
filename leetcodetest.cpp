@@ -116,12 +116,15 @@ namespace testhelper
 		}
 	}
 	//´òÓ¡Êý×é,
-	void printVectorResult(vector<int>&& res)
+	//u may use like this:
+	//testhelper::printContainerResult<vector>(testhelper::testRvalue<vector<string>, string>(solution93::restoreIpAddresses, "101023"));
+	template < template<typename, typename> class Container, typename T, typename Alloc>
+	void printContainerResult(Container<T, Alloc>&& res, const string&& delimiter = ", ")
 	{
 		cout << '[';
 		if (0 != res.size())
 		{
-			copy(res.begin(), res.end() - 1, ostream_iterator<int>(cout, ", "));
+			copy(res.begin(), res.end() - 1, ostream_iterator<T>(cout, delimiter.c_str()));
 			cout << res.back();
 		}
 		cout << "]";
@@ -136,10 +139,10 @@ namespace testhelper
 		for (auto&& itor = res.begin(); itor != res.end() - 1; ++itor)
 		{
 
-			printVectorResult(std::forward<vector<int>>(*itor));
+			printContainerResult<vector>(std::forward<vector<int>>(*itor));
 			cout << ", ";
 		}
-		printVectorResult(std::forward<vector<int>>(res.back()));
+		printContainerResult<vector>(std::forward<vector<int>>(res.back()));
 		cout << "}" << endl;
 	}
 
@@ -3430,6 +3433,68 @@ namespace solution90
 	}
 }
 
+
+namespace solution91
+{
+	int numDecodings(string s) {
+		auto checksingle = [](const char& ch)
+		{
+			return '0' == ch ? 0 : 1;
+		};
+		auto checkdouble = [](const char& ch1, const char& ch2)
+		{
+			return ('1' == ch1 || ('2' == ch1 && ch2 < '7')) ? 1 : 0;
+		};
+
+		if (0 == s.size()) return 0;
+		if (1 == s.size()) return checksingle(s[0]);
+		vector<int> result = vector<int>(s.size(), 0);
+		result[0] = checksingle(s[0]);
+		result[1] = checksingle(s[0]) * checksingle(s[1]) + checkdouble(s[0], s[1]);
+		for (int index = 2; index < s.size(); ++index)
+		{
+			if (checksingle(s[index])) result[index] = result[index - 1];
+			if (checkdouble(s[index - 1], s[index])) result[index] += result[index - 2];
+		}
+		return result.back();
+	}
+}
+
+namespace solution93
+{
+	vector<string> restoreIpAddresses(string s) {
+		vector<string> ret;
+		string temp;
+		int length = s.size();
+		function<void(int, int, string)> restorehelp;
+		restorehelp = [&s, &ret, &length, &restorehelp](int start, int partnum, string ip) ->void
+		{
+			if ((length - start) < (4 - partnum) || (length - start) > ((4 - partnum) * 3)) return;
+			if (4 == partnum && start == length)
+			{
+				ip.erase(ip.end() - 1);
+				ret.emplace_back(ip);
+			}
+			int num = 0;
+			for (int index = start; (index < length) && (index < start + 3); ++index)
+			{
+				num = num * 10 + s[index] - '0';
+				if (num < 256)
+				{
+					ip += s[index];
+					restorehelp(index + 1, partnum + 1, ip + '.');
+
+				}
+				if (0 == num) break;
+
+			}
+		};
+		restorehelp(0, 0, temp);
+
+
+		return ret;
+	}
+}
 
 int main()
 {
