@@ -3496,6 +3496,63 @@ namespace solution93
 	}
 }
 
+namespace solution95
+{
+
+
+	struct TreeNode {
+		int val;
+		TreeNode* left;
+		TreeNode* right;
+		TreeNode() : val(0), left(nullptr), right(nullptr) {}
+		TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+		TreeNode(int x, TreeNode* left, TreeNode* right) : val(x), left(left), right(right) {}
+	};
+
+
+	vector<TreeNode*> generateTrees(int n) {
+		if (1 == n)
+		{
+			return 	{ new TreeNode(n) };
+		}
+		function<vector<TreeNode*>(int, int)> helper;
+		helper = [&helper, &n](int low, int high) ->vector<TreeNode*>
+		{
+			vector<TreeNode*> vret;
+
+			if (low > high)
+			{
+				vret.emplace_back(nullptr);
+			}
+			if (low == high)
+			{
+				vret.emplace_back(new TreeNode(low));
+				return vret;
+			}
+			for (int index = low; index <= high; ++index)
+			{
+
+				vector<TreeNode*> left = helper(low, index - 1);
+				vector<TreeNode*> right = helper(index + 1, high);
+				for (auto& e1 : left)
+				{
+					for (auto& e2 : right)
+					{
+						TreeNode* root = new TreeNode(index);
+						root->left = e1;
+						root->right = e2;
+						vret.emplace_back(root);
+					}
+				}
+			}
+			return vret;
+		};
+		//root
+		return helper(1, n);
+	}
+}
+
+
 int main()
 {
 	/*
