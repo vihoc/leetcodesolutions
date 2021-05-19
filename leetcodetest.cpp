@@ -130,6 +130,58 @@ namespace testhelper
 		cout << "]";
 
 	}
+
+	template < template<typename, typename> class Container, typename T, typename Alloc>
+	void printTreeResultprefix(Container<T*, Alloc>&& res, const string&& delimiter = ", ")
+	{
+		function<void(T*)> helper;
+		vector<T*> que;
+		helper = [&helper, &que](T* root)
+		{
+
+			if (nullptr != root)
+			{
+				helper(root->left);
+				que.emplace_back(root);
+				helper(root->right);
+			}
+			else
+			{
+				que.emplace_back(root);
+			}
+		};
+		cout << '[';
+		if (0 != res.size())
+		{
+			for (auto data = res.begin(); data != res.end() - 1; ++data)
+			{
+				cout << "{";
+				helper(*data);
+				for (auto itor = que.begin(); itor != que.end() - 1; ++itor)
+				{
+					if (nullptr != *itor)
+					{
+						cout << (*itor)->val;
+					}
+					else cout << "null";
+					cout << delimiter;
+				}
+
+				if (nullptr != que.back())
+				{
+					cout << que.back()->val;
+				}
+				else cout << "null";
+				cout << "}" << delimiter;
+				que.clear();
+			}
+			cout << "{";
+			helper(res.back());
+			cout << "} ";
+		}
+		cout << "]";
+	}
+
 	//´òÓ¡2dÊý×é, 
 	// testhelper::printVectorResult2d(testhelper::testRvalue<vector<vector<int>>, vector<int>>(solution90::subsetsWithDup, { }));
 	// easy to check result
