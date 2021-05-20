@@ -3605,6 +3605,33 @@ namespace solution95
 }
 
 
+namespace solution96
+{
+	int numTrees(int n) {
+		if (0 == n) return 0;
+		if (1 == n) return 1;
+		static vector<int> result = { 1, 1 };
+		int size = result.size();
+		if (size < n + 1)
+		{
+			result.resize(n + 1);
+		}
+		else
+		{
+			return result[n];
+		}
+		int sum = 0;
+		for (int index = size; index <= n; ++index)
+		{
+			for (int temp = 0; temp < index; ++temp)
+			{
+				result[index] += result[temp] * result[index - temp - 1];
+			}
+		}
+		return result[n];
+	}
+}
+
 int main()
 {
 	/*
