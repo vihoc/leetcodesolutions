@@ -68,6 +68,35 @@ namespace testhelper
 		std::cout << "]" << std::endl;
 	}
 
+	template <typename Node>
+	void deleteNodeList(Node* root)
+	{
+		while (root)
+		{
+			Node* temp = root;
+			root = root->next;
+			delete temp;
+		}
+	}
+
+// 	template <typename Node, typename container, typename Call>
+// 	void TestNodeAlgorithm(Call cb, container&& list)
+// 	{
+// 	   Node* root = generateList<Node>(std::forward<container>(list));
+// 		Node* result = cb(root);
+// 		printListNode(result);
+// 		deleteNodeList(result);
+// 	}
+
+	template <typename Node, typename container, typename Call, typename... Arg>
+	void TestNodeAlgorithm(Call cb, container&& list, Arg... arg)
+	{
+		Node* root = generateList<Node>(std::forward<container>(list));
+		Node* result = std::invoke(cb, root, arg...);
+		printListNode(result);
+		deleteNodeList(result);
+	}
+
 
 	//TODO, treenode.
 
@@ -91,15 +120,6 @@ namespace testhelper
 			i++;
 		}
 
-	}
-
-	void printVector(vector<vector<int>>& res)
-	{
-		for (auto v : res)
-		{
-			copy(v.begin(), v.end(), ostream_iterator<int>(cout, "  "));
-			cout << endl;
-		}
 	}
 
 
@@ -201,10 +221,10 @@ namespace testhelper
 	// u may use like this
 	//testhelper::testRvalue<vector<vector<int>>, vector<int>>(solution90::subsetsWithDup, { });
 	//so u don't think the variable name
-	template<typename RET, typename SRC, typename CALL>
-	RET testRvalue(CALL callback, SRC&& vec)
+	template<typename RET, typename SRC, typename CALL, typename... Arg>
+	RET testRvalue(CALL callback, SRC&& vec, Arg... arg)
 	{
-		return callback(vec);
+		return callback(vec, arg...);
 	}
 }
 
