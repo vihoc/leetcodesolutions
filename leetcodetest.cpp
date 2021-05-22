@@ -98,6 +98,35 @@ namespace testhelper
 	}
 
 
+	//這裏如果cb刪除了元素會有内存泄漏
+	//多個鏈表合并只返回一個鏈表節點,可能引擎内存泄露
+		//為什麽用上variadic templates還要手動展開node? 因爲菜,不會寫
+
+	template <typename Node, typename container, typename Call, typename... Arg>
+	void TestNodeAlgorithmN(Call cb, container&& list1, container&& list2, Arg... arg)
+	{
+		Node* root1 = generateList<Node>(std::forward<container>(list1));
+		Node* root2 = generateList<Node>(std::forward<container>(list1));
+		auto result = std::invoke(cb, root1, root2, arg...);
+		printListNode(result);
+		deleteNodeList(result);
+
+	}
+
+
+	template <typename Node, typename container, typename Call, typename... Arg>
+	void TestNodeAlgorithmN(Call cb, container&& list1, container&& list2, container&& list3, Arg... arg)
+	{
+		Node* root1 = generateList<Node>(std::forward<container>(list1));
+		Node* root2 = generateList<Node>(std::forward<container>(list2));
+		Node* root3 = generateList<Node>(std::forward<container>(list3));
+		auto result = std::invoke(cb, root1, root2, root3, arg...);
+		printListNode(result);
+		deleteNodeList(result);
+
+	}
+
+
 	//TODO, treenode.
 
 	vector<vector<int>> generateVector(int n)
@@ -216,6 +245,193 @@ namespace testhelper
 		}
 		printContainerResult<vector>(std::forward<vector<int>>(res.back()));
 		cout << "}" << endl;
+	}
+
+#if _HAS_CXX17
+	//如果確定treenode不為0的話,直接寫數字,但是類型必須為Container<std::optional<int>>
+	template <typename Node, template<typename, typename> class Container, typename T, typename Alloc>
+	Node* generate_BST(Container<T, Alloc>&& list)
+	{
+		//using value_type = typename T::value_type;
+		queue<Node*> que;
+		queue<Node*> linkque;
+		Node* root = nullptr;
+		for (auto& e : list)
+		{
+			if (e.has_value())
+			{
+				que.push(new Node(e.value()));
+			}
+			else que.push(nullptr);
+		}
+		root = que.front();
+		que.pop();
+		linkque.push(root);
+		int step = linkque.size();
+		while (step-- > 0)
+		{
+			Node* temp = nullptr;
+			if (!linkque.empty())
+			{
+				temp = linkque.front();
+				linkque.pop();
+			}
+			if (!que.empty())
+			{
+				temp->left = que.front();
+				que.pop();
+				linkque.push(temp->left);
+			}
+			if (!que.empty())
+			{
+				temp->right = que.front();
+				que.pop();
+				linkque.push(temp->right);
+			}
+			if (0 == step) step = linkque.size();
+		}
+		return root;
+	}
+
+	// 	template <typename Node, template<typename, typename> class Container, typename T = is_pod<T>::value_type, typename Alloc>
+	// 	Node* generate_BST(Container<T, Alloc>&& list)
+	// 	{
+	// 		//using value_type = typename T::value_type;
+	// 		queue<Node*> que;
+	// 		queue<Node*> linkque;
+	// 		Node* root = nullptr;
+	// 		for (auto& e : list)
+	// 		{
+	// 			if (e.has_value())
+	// 			{
+	// 				que.push(new Node(e.value()));
+	// 			}
+	// 			else que.push(nullptr);
+	// 		}
+	// 		root = que.front();
+	// 		que.pop();
+	// 		linkque.push(root);
+	// 		int step = linkque.size();
+	// 		while (step-- > 0)
+	// 		{
+	// 			Node* temp = nullptr;
+	// 			if (!linkque.empty())
+	// 			{
+	// 				temp = linkque.front();
+	// 				linkque.pop();
+	// 			}
+	// 			if (!que.empty())
+	// 			{
+	// 				temp->left = que.front();
+	// 				que.pop();
+	// 				linkque.push(temp->left);
+	// 			}
+	// 			if (!que.empty())
+	// 			{
+	// 				temp->right = que.front();
+	// 				que.pop();
+	// 				linkque.push(temp->right);
+	// 			}
+	// 			if (0 == step) step = linkque.size();
+	// 		}
+	// 		return root;
+	// 	}
+
+#else
+	//非17以後編譯器不支持optional,所以也暫時無法處理中間含有null的元素,有辦法解決,
+	//使用可變參數將子樹手動分開,然後單獨創建子樹最後合并. 有點複雜,且筆者已經在用cpp17的編譯器了.
+	template <typename Node, template<typename, typename> class Container, typename T, typename Alloc>
+	Node* generate_BST(Container<T, Alloc>&& list)
+	{
+		queue<Node*> que;
+		queue<Node*> linkque;
+		Node* root = nullptr;
+		for (auto& e : list)
+		{
+
+			que.push(new Node(e.value()));
+
+		}
+		root = que.front();
+		que.pop();
+		linkque.push(root);
+		int step = linkque.size();
+		while (step-- > 0)
+		{
+			Node* temp = nullptr;
+			if (!linkque.empty())
+			{
+				temp = linkque.front();
+				linkque.pop();
+			}
+			if (!que.empty())
+			{
+				temp->left = que.front();
+				que.pop();
+				linkque.push(temp->left);
+			}
+			if (!que.empty())
+			{
+				temp->right = que.front();
+				que.pop();
+				linkque.push(temp->right);
+			}
+			if (0 == step) step = linkque.size();
+		}
+		return root;
+	}
+
+#endif //end of_HAS_CXX17
+
+	template<typename Node>
+	void PrintTree(Node* root)
+	{
+		function<void(Node*, int)> print;
+		print = [&print](Node* root, int indent)
+		{
+			if (nullptr != root->right) print(root->right, indent + 1);
+			for (int i = 0; i < indent; ++i)
+				std::cout << "    ";
+			std::cout << root->val << std::endl;
+			if (nullptr != root->left) print(root->left, indent + 1);
+		};
+
+		if (nullptr == root)
+		{
+			cout << "Empty tree" << endl;
+			return;
+		}
+		else
+		{
+			std::cout << std::endl << std::endl;
+			print(root, 0);
+			for (int i = 0; i < 80; ++i) {
+				std::cout << "-";
+			}
+
+			std::cout << std::endl;
+
+		}
+	}
+
+	template<typename Node>
+	void DeleteTree(Node* root)
+	{
+		if (nullptr != root)
+		{
+			if (nullptr != root->left) DeleteTree(root->left);
+			if (nullptr != root->right) DeleteTree(root->right);
+			delete root;
+		}
+	}
+
+	template <typename Node, typename Container, typename Call, typename... Arg>
+	void TestTreeAlgorithm(Call cb, Container&& list, Arg... arg)
+	{
+		Node* root = generate_BST<Node>(std::forward<Container>(list));
+		std::invoke(cb, root, arg...);
+		PrintTree(root);
+		DeleteTree(root);
 	}
 
 	// u may use like this
@@ -3649,6 +3865,48 @@ namespace solution96
 			}
 		}
 		return result[n];
+	}
+}
+
+namespace solution97
+{
+	bool isInterleave(string s1, string s2, string s3) {
+		if (s1.length() + s2.length() != s3.length()) return false;
+		if (0 == s1.length() || 0 == s2.length())
+		{
+			if (0 == s1.length() && 0 == s2.length()) return true;
+			else if (0 == s1.length())
+			{
+				return 0 == s2.compare(s3);
+			}
+			else if (0 == s2.length())
+			{
+				return 0 == s1.compare(s3);
+			}
+		}
+		int sizes1 = s1.length();
+		int sizes2 = s2.length();
+		vector<vector<int>> result(sizes1 + 1, vector<int>(sizes2 + 1, 0));
+
+		result[0][0] = 1;
+
+		for (int indexi = 0; indexi <= sizes1; ++indexi)
+		{
+			for (int indexj = 0; indexj <= sizes2; ++indexj)
+			{
+				int pos = indexi + indexj - 1;
+				if (indexi > 0 && s1[indexi - 1] == s3[pos])
+				{
+					result[indexi][indexj] = result[indexi - 1][indexj] || result[indexi][indexj];
+				}
+				if (indexj > 0 && s2[indexj - 1] == s3[pos])
+				{
+					result[indexi][indexj] = result[indexi][indexj] || result[indexi][indexj - 1];
+				}
+			}
+		}
+		testhelper::printVectorResult2d(std::forward<vector<vector<int>>>(result));
+		return result.back().back();
 	}
 }
 
