@@ -67,6 +67,19 @@ testhelper::TestNodeAlgorithm<solution82::ListNode, vector<int>>(solution82::del
 如果遇到86題那種 可以使用std::bind
 auto test = bind(solution86::partition, std::placeholders::_1, 5);
 將test傳入TestNodeAlgorithm 即可
+另少量算法需要傳入多個鏈表指針,故提供最多接受三個list初始化列表的TestNodeAlgorithmN
+
+####generate_BST/PrintTree/DeleteTree/TestTreeAlgorithm
+與鏈表算法一致,提供用~~樹從生成到入土的一條龍服務~~
+generate_BST有兩個版本,C++17編譯器之前的版本不支持生成null節點,只能使用
+vector<int>{1, 2, 3} 而leetcode拷貝下來的input常常之間含有null,所以17后的版本為完全體
+使用方法:
+testhelper::generate_BST<solution114::TreeNode, vector, optional<int>, allocator<optional<int>>>({ 1, 2, 3, {}, {}, 5, 6  });
+testhelper::generate_BST<solution114::TreeNode>(vector<optional<int>>{ 1, 2, 3, {}, {}, 5, 6 });    都行,{}為leetcode中的null
+printTree:會將樹逆時針旋轉90度打印出來,方便觀察
+DeleteTree:~~節點依次入土~~
+TestTreeAlgorithm:與鏈表算法一樣使用就好.接受可變參數. 
+
 
 ####printListNode
 
