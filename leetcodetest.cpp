@@ -248,6 +248,15 @@ namespace testhelper
 	}
 
 #if _HAS_CXX17
+	template <typename T>
+	void checkT()
+	{
+		cout << "testinfo" << endl;
+		cout << std::boolalpha << is_pod_v<T> << endl;
+		cout << std::boolalpha << is_same_v<T, int> << endl;
+		cout << std::boolalpha << is_integral_v<T> << endl;
+		cout << "end" << endl;
+	}
 	//如果確定treenode不為0的話,直接寫數字,但是類型必須為Container<std::optional<int>>
 	template <typename Node, template<typename, typename> class Container, typename T, typename Alloc>
 	Node* generate_BST(Container<T, Alloc>&& list)
@@ -293,49 +302,45 @@ namespace testhelper
 		return root;
 	}
 
-	// 	template <typename Node, template<typename, typename> class Container, typename T = is_pod<T>::value_type, typename Alloc>
-	// 	Node* generate_BST(Container<T, Alloc>&& list)
-	// 	{
-	// 		//using value_type = typename T::value_type;
-	// 		queue<Node*> que;
-	// 		queue<Node*> linkque;
-	// 		Node* root = nullptr;
-	// 		for (auto& e : list)
-	// 		{
-	// 			if (e.has_value())
-	// 			{
-	// 				que.push(new Node(e.value()));
-	// 			}
-	// 			else que.push(nullptr);
-	// 		}
-	// 		root = que.front();
-	// 		que.pop();
-	// 		linkque.push(root);
-	// 		int step = linkque.size();
-	// 		while (step-- > 0)
-	// 		{
-	// 			Node* temp = nullptr;
-	// 			if (!linkque.empty())
-	// 			{
-	// 				temp = linkque.front();
-	// 				linkque.pop();
-	// 			}
-	// 			if (!que.empty())
-	// 			{
-	// 				temp->left = que.front();
-	// 				que.pop();
-	// 				linkque.push(temp->left);
-	// 			}
-	// 			if (!que.empty())
-	// 			{
-	// 				temp->right = que.front();
-	// 				que.pop();
-	// 				linkque.push(temp->right);
-	// 			}
-	// 			if (0 == step) step = linkque.size();
-	// 		}
-	// 		return root;
-	// 	}
+	template <typename Node, template<typename, typename> class Container, typename Alloc>
+	Node* generate_BST(Container<int, Alloc>&& list)
+	{
+		//using value_type = typename T::value_type;
+		queue<Node*> que;
+		queue<Node*> linkque;
+		Node* root = nullptr;
+		for (auto& e : list)
+		{
+			que.push(new Node(e));
+		}
+		root = que.front();
+		que.pop();
+		linkque.push(root);
+		int step = linkque.size();
+		while (step-- > 0)
+		{
+			Node* temp = nullptr;
+			if (!linkque.empty())
+			{
+				temp = linkque.front();
+				linkque.pop();
+			}
+			if (!que.empty())
+			{
+				temp->left = que.front();
+				que.pop();
+				linkque.push(temp->left);
+			}
+			if (!que.empty())
+			{
+				temp->right = que.front();
+				que.pop();
+				linkque.push(temp->right);
+			}
+			if (0 == step) step = linkque.size();
+		}
+		return root;
+	}
 
 #else
 	//非17以後編譯器不支持optional,所以也暫時無法處理中間含有null的元素,有辦法解決,
