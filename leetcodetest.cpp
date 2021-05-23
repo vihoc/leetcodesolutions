@@ -259,20 +259,27 @@ namespace testhelper
 	}
 	//如果確定treenode不為0的話,直接寫數字,但是類型必須為Container<std::optional<int>>
 	template <typename Node, template<typename, typename> class Container, typename T, typename Alloc>
-	Node* generate_BST(Container<T, Alloc>&& list)
+	Node* generate_BT(Container<T, Alloc>&& list)
 	{
-		//using value_type = typename T::value_type;
 		queue<Node*> que;
 		queue<Node*> linkque;
 		Node* root = nullptr;
 		for (auto& e : list)
 		{
-			if (e.has_value())
+			if constexpr (is_pod_v<T>)
 			{
-				que.push(new Node(e.value()));
+				que.push(new Node(e));
 			}
-			else que.push(nullptr);
+			else
+			{
+				if (e.has_value())
+				{
+					que.push(new Node(e.value()));
+				}
+				else que.push(nullptr);
+			}
 		}
+
 		root = que.front();
 		que.pop();
 		linkque.push(root);
@@ -285,25 +292,32 @@ namespace testhelper
 				temp = linkque.front();
 				linkque.pop();
 			}
-			if (!que.empty())
+			if (nullptr != temp)
 			{
-				temp->left = que.front();
-				que.pop();
-				linkque.push(temp->left);
-			}
-			if (!que.empty())
-			{
-				temp->right = que.front();
-				que.pop();
-				linkque.push(temp->right);
+				if (!que.empty())
+				{
+
+					temp->left = que.front();
+					que.pop();
+					linkque.push(temp->left);
+
+				}
+				if (!que.empty())
+				{
+
+					temp->right = que.front();
+					que.pop();
+					linkque.push(temp->right);
+				}
 			}
 			if (0 == step) step = linkque.size();
 		}
+
 		return root;
 	}
-
+#else
 	template <typename Node, template<typename, typename> class Container, typename Alloc>
-	Node* generate_BST(Container<int, Alloc>&& list)
+	Node* generate_BT(Container<int, Alloc>&& list)
 	{
 		//using value_type = typename T::value_type;
 		queue<Node*> que;
@@ -325,61 +339,23 @@ namespace testhelper
 				temp = linkque.front();
 				linkque.pop();
 			}
-			if (!que.empty())
+			if (nullptr != temp)
 			{
-				temp->left = que.front();
-				que.pop();
-				linkque.push(temp->left);
-			}
-			if (!que.empty())
-			{
-				temp->right = que.front();
-				que.pop();
-				linkque.push(temp->right);
-			}
-			if (0 == step) step = linkque.size();
-		}
-		return root;
-	}
+				if (!que.empty())
+				{
 
-#else
-	//非17以後編譯器不支持optional,所以也暫時無法處理中間含有null的元素,有辦法解決,
-	//使用可變參數將子樹手動分開,然後單獨創建子樹最後合并. 有點複雜,且筆者已經在用cpp17的編譯器了.
-	template <typename Node, template<typename, typename> class Container, typename T, typename Alloc>
-	Node* generate_BST(Container<T, Alloc>&& list)
-	{
-		queue<Node*> que;
-		queue<Node*> linkque;
-		Node* root = nullptr;
-		for (auto& e : list)
-		{
+					temp->left = que.front();
+					que.pop();
+					linkque.push(temp->left);
 
-			que.push(new Node(e.value()));
+				}
+				if (!que.empty())
+				{
 
-		}
-		root = que.front();
-		que.pop();
-		linkque.push(root);
-		int step = linkque.size();
-		while (step-- > 0)
-		{
-			Node* temp = nullptr;
-			if (!linkque.empty())
-			{
-				temp = linkque.front();
-				linkque.pop();
-			}
-			if (!que.empty())
-			{
-				temp->left = que.front();
-				que.pop();
-				linkque.push(temp->left);
-			}
-			if (!que.empty())
-			{
-				temp->right = que.front();
-				que.pop();
-				linkque.push(temp->right);
+					temp->right = que.front();
+					que.pop();
+					linkque.push(temp->right);
+				}
 			}
 			if (0 == step) step = linkque.size();
 		}
@@ -433,7 +409,7 @@ namespace testhelper
 	template <typename Node, typename Container, typename Call, typename... Arg>
 	void TestTreeAlgorithm(Call cb, Container&& list, Arg... arg)
 	{
-		Node* root = generate_BST<Node>(std::forward<Container>(list));
+		Node* root = generate_BT<Node>(std::forward<Container>(list));
 		std::invoke(cb, root, arg...);
 		PrintTree(root);
 		DeleteTree(root);
@@ -3912,6 +3888,45 @@ namespace solution97
 		}
 		testhelper::printVectorResult2d(std::forward<vector<vector<int>>>(result));
 		return result.back().back();
+	}
+}
+
+namespace solution98
+{
+	struct TreeNode {
+		int val;
+		TreeNode* left;
+		TreeNode* right;
+		TreeNode() : val(0), left(nullptr), right(nullptr) {}
+		TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+		TreeNode(int x, TreeNode* left, TreeNode* right) : val(x), left(left), right(right) {}
+
+	};
+	bool isValidBST(TreeNode* root)
+	{
+		if (nullptr == root) return false;
+		if (nullptr == root->left && nullptr == root->right) return true;
+		function<void(TreeNode*)> helper;
+		vector<int> v;
+		helper = [&helper, &v](TreeNode* root) -> void
+		{
+			if (nullptr != root->left)
+			{
+				helper(root->left);
+			}
+			v.emplace_back(root->val);
+			if (nullptr != root->right)
+			{
+				helper(root->right);
+			}
+		};
+		helper(root);
+		for (int i = 1; i < v.size(); ++i)
+		{
+			if (v[i] <= v[i - 1])
+				return false;
+		}
+		return true;
 	}
 }
 
