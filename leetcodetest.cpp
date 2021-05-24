@@ -3930,6 +3930,40 @@ namespace solution98
 	}
 }
 
+namespace solution99
+{
+	struct TreeNode {
+		int val;
+		TreeNode* left;
+		TreeNode* right;
+		TreeNode() : val(0), left(nullptr), right(nullptr) {}
+		TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+		TreeNode(int x, TreeNode* left, TreeNode* right) : val(x), left(left), right(right) {}
+
+	};
+	void recoverTree(TreeNode* root)
+	{
+		TreeNode* wrong1 = nullptr;
+		TreeNode* wrong2 = nullptr;
+		TreeNode* prev = nullptr;
+		function<void(TreeNode*)> helper;
+		helper = [&](TreeNode* root)
+		{
+			if (root->left) helper(root->left);
+			if (nullptr != prev && prev->val > root->val)
+			{
+				if (nullptr == wrong1) wrong1 = prev;
+				/*if (nullptr == wrong2)*/ wrong2 = root;
+			}
+			prev = root;
+			if (root->right) helper(root->right);
+
+		};
+		helper(root);
+		swap(wrong1->val, wrong2->val);
+	}
+}
+
 int main()
 {
 	/*
