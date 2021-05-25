@@ -79,54 +79,6 @@ namespace testhelper
 		}
 	}
 
-// 	template <typename Node, typename container, typename Call>
-// 	void TestNodeAlgorithm(Call cb, container&& list)
-// 	{
-// 	   Node* root = generateList<Node>(std::forward<container>(list));
-// 		Node* result = cb(root);
-// 		printListNode(result);
-// 		deleteNodeList(result);
-// 	}
-
-	template <typename Node, typename container, typename Call, typename... Arg>
-	void TestNodeAlgorithm(Call cb, container&& list, Arg... arg)
-	{
-		Node* root = generateList<Node>(std::forward<container>(list));
-		Node* result = std::invoke(cb, root, arg...);
-		printListNode(result);
-		deleteNodeList(result);
-	}
-
-
-	//這裏如果cb刪除了元素會有内存泄漏
-	//多個鏈表合并只返回一個鏈表節點,可能引擎内存泄露
-		//為什麽用上variadic templates還要手動展開node? 因爲菜,不會寫
-
-	template <typename Node, typename container, typename Call, typename... Arg>
-	void TestNodeAlgorithmN(Call cb, container&& list1, container&& list2, Arg... arg)
-	{
-		Node* root1 = generateList<Node>(std::forward<container>(list1));
-		Node* root2 = generateList<Node>(std::forward<container>(list1));
-		auto result = std::invoke(cb, root1, root2, arg...);
-		printListNode(result);
-		deleteNodeList(result);
-
-	}
-
-
-	template <typename Node, typename container, typename Call, typename... Arg>
-	void TestNodeAlgorithmN(Call cb, container&& list1, container&& list2, container&& list3, Arg... arg)
-	{
-		Node* root1 = generateList<Node>(std::forward<container>(list1));
-		Node* root2 = generateList<Node>(std::forward<container>(list2));
-		Node* root3 = generateList<Node>(std::forward<container>(list3));
-		auto result = std::invoke(cb, root1, root2, root3, arg...);
-		printListNode(result);
-		deleteNodeList(result);
-
-	}
-
-
 	//TODO, treenode.
 
 	vector<vector<int>> generateVector(int n)
@@ -246,6 +198,48 @@ namespace testhelper
 		printContainerResult<vector>(std::forward<vector<int>>(res.back()));
 		cout << "}" << endl;
 	}
+	template<typename Node>
+	void PrintTree(Node* root)
+	{
+		function<void(Node*, int)> print;
+		print = [&print](Node* root, int indent)
+		{
+			if (nullptr != root->right) print(root->right, indent + 1);
+			for (int i = 0; i < indent; ++i)
+				std::cout << "    ";
+			std::cout << root->val << std::endl;
+			if (nullptr != root->left) print(root->left, indent + 1);
+		};
+
+		if (nullptr == root)
+		{
+			cout << "Empty tree" << endl;
+			return;
+		}
+		else
+		{
+			std::cout << std::endl << std::endl;
+			print(root, 0);
+			for (int i = 0; i < 80; ++i) {
+				std::cout << "-";
+			}
+
+			std::cout << std::endl;
+
+		}
+	}
+
+	template<typename Node>
+	void DeleteTree(Node* root)
+	{
+		if (nullptr != root)
+		{
+			if (nullptr != root->left) DeleteTree(root->left);
+			if (nullptr != root->right) DeleteTree(root->right);
+			delete root;
+		}
+	}
+
 
 #if _HAS_CXX17
 	template <typename T>
@@ -264,6 +258,7 @@ namespace testhelper
 		queue<Node*> que;
 		queue<Node*> linkque;
 		Node* root = nullptr;
+
 		for (auto& e : list)
 		{
 			if constexpr (is_pod_v<T>)
@@ -315,6 +310,155 @@ namespace testhelper
 
 		return root;
 	}
+
+	template <typename Node, typename Container, typename T>
+	auto generateBT_helper(T&& arg)
+	{
+		//cout << type_name<decltype(arg)>() << endl;
+		if constexpr (is_same_v<Container, remove_reference_t<decltype(arg)>>)
+		{
+			Node* root = generate_BT<Node>(std::move(arg));
+
+			return std::make_tuple(root);
+		}
+		else
+		{
+			return std::make_tuple(arg);
+		}
+	}
+
+
+	template <typename Node, typename Container, typename T>
+	auto generateList_helper(T&& arg)
+	{
+		//cout << type_name<decltype(arg)>() << endl;
+		if constexpr (is_same_v<Container, remove_reference_t<decltype(arg)>>)
+		{
+			Node* root = generateList<Node>(std::move(arg));
+
+			return std::make_tuple(root);
+		}
+		else
+		{
+			return std::make_tuple(arg);
+		}
+	}
+
+	template<typename Node, typename Call, typename T>
+	void AlgorithmNcb_helper(Call cb, T root)
+	{
+		if constexpr (is_same_v<Node, remove_pointer_t<decltype(root)>>)
+		{
+			cb(root);
+		}
+	}
+
+	template<typename Node, typename Container, typename Head>
+	auto dispatchandcatTree(Head&& head)
+	{
+		return generateBT_helper<Node, Container>(head);
+	}
+
+	template<typename Node, typename Container, typename Head, typename... Tail>
+	auto dispatchandcatTree(Head&& head, Tail&&... tail)
+	{
+		return tuple_cat(generateBT_helper<Node, Container>(head), dispatchandcatTree <Node, Container>(tail...));
+	}
+
+	template<typename Node, typename Container, typename Head>
+	auto dispatchandcatList(Head&& head)
+	{
+		return generateList_helper<Node, Container>(head);
+	}
+
+	template<typename Node, typename Container, typename Head, typename... Tail>
+	auto dispatchandcatList(Head&& head, Tail&&... tail)
+	{
+		return tuple_cat(generateList_helper<Node, Container>(head), dispatchandcatList <Node, Container>(tail...));
+	}
+
+	template <typename Call, class Tuple, size_t... Is>
+	constexpr auto  invokecb(Call cb, Tuple t, std::index_sequence<Is...>) {
+		return cb(get<Is>(t)...);
+	}
+
+	template <typename Node, typename Container, typename Call, typename... Arg>
+	void TestTreeAlgorithm(Call cb, Arg&&... arg)
+	{
+		auto argtuple = std::make_tuple(arg...);
+		int size = tuple_size<decltype(argtuple)>{};
+		auto newArg = std::apply([](auto&&... args)
+			{
+				return dispatchandcatTree<Node, Container>(args...);
+			},
+			argtuple);
+
+		auto result = invokecb(std::forward<Call>(cb), std::forward<decltype(newArg)>(newArg), std::make_index_sequence < tuple_size<decltype(newArg)>{} > {});
+		//TODO 如果invoke中傳入的算法 將樹内元素刪除,將會引起一些内存泄漏, 
+		//以下如將全部參數生成的樹各自delete, 將可能引起av.
+#if _DEBUG
+		cout << "here is debug print" << endl;
+
+
+		cout << "original data:"
+			std::apply([](auto&&... args)
+				{
+					((AlgorithmNcb_helper<Node>(PrintTree<Node>, args)), ...);
+				},
+				newArg);
+
+		cout << "end of debug";
+#endif
+		cout << "result data" << endl;
+		AlgorithmNcb_helper<Node>(PrintTree<Node>, result);
+		cout << "end of result;" << endl;
+		AlgorithmNcb_helper<Node>(DeleteTree<Node>, result)
+			//所以這裏是delete生成的原數據的代碼, 沒什麽卵用 只要算法中有修改節點指針. 就會出錯
+	// 		std::apply([](auto&&... args)
+	// 			{
+	// 				((AlgorithmNcb_helper<Node>(DeleteTree<Node>, args)), ...);
+	// 			},
+	// 			newArg);
+	}
+
+	template <typename Node, typename Container, typename Call, typename... Arg>
+	void TestNodeAlgorithmN(Call cb, Arg&&... arg)
+	{
+		auto argtuple = std::make_tuple(arg...);
+		int size = tuple_size<decltype(argtuple)>{};
+		auto newArg = std::apply([](auto&&... args)
+			{
+				return dispatchandcatList<Node, Container>(args...);
+			},
+			argtuple);
+
+		auto result = invokecb(std::forward<Call>(cb), std::forward<decltype(newArg)>(newArg), std::make_index_sequence < tuple_size<decltype(newArg)>{} > {});
+
+#if _DEBUG
+		cout << "here is debug print" << endl;
+
+
+		cout << "original data:"
+			std::apply([](auto&&... args)
+				{
+					((AlgorithmNcb_helper<Node>(printListNode<Node>, args)), ...);
+				},
+				newArg);
+
+		cout << "end of debug";
+#endif
+		cout << "result data" << endl;
+		AlgorithmNcb_helper<Node>(printListNode<Node>, result);
+		cout << "end of result;" << endl;
+		AlgorithmNcb_helper<Node>(deleteNodeList<Node>, result)
+			// 		std::apply([](auto&&... args)
+			// 			{
+			// 				((AlgorithmNcb_helper<Node>(DeleteTree<Node>, args)), ...);
+			// 			},
+			// 			newArg);
+	}
+
+
 #else
 	template <typename Node, template<typename, typename> class Container, typename Alloc>
 	Node* generate_BT(Container<int, Alloc>&& list)
@@ -362,50 +506,6 @@ namespace testhelper
 		return root;
 	}
 
-#endif //end of_HAS_CXX17
-
-	template<typename Node>
-	void PrintTree(Node* root)
-	{
-		function<void(Node*, int)> print;
-		print = [&print](Node* root, int indent)
-		{
-			if (nullptr != root->right) print(root->right, indent + 1);
-			for (int i = 0; i < indent; ++i)
-				std::cout << "    ";
-			std::cout << root->val << std::endl;
-			if (nullptr != root->left) print(root->left, indent + 1);
-		};
-
-		if (nullptr == root)
-		{
-			cout << "Empty tree" << endl;
-			return;
-		}
-		else
-		{
-			std::cout << std::endl << std::endl;
-			print(root, 0);
-			for (int i = 0; i < 80; ++i) {
-				std::cout << "-";
-			}
-
-			std::cout << std::endl;
-
-		}
-	}
-
-	template<typename Node>
-	void DeleteTree(Node* root)
-	{
-		if (nullptr != root)
-		{
-			if (nullptr != root->left) DeleteTree(root->left);
-			if (nullptr != root->right) DeleteTree(root->right);
-			delete root;
-		}
-	}
-
 	template <typename Node, typename Container, typename Call, typename... Arg>
 	void TestTreeAlgorithm(Call cb, Container&& list, Arg... arg)
 	{
@@ -414,6 +514,67 @@ namespace testhelper
 		PrintTree(root);
 		DeleteTree(root);
 	}
+
+	template <typename Node, typename container, typename Call, typename... Arg>
+	void TestTreeAlgorithm(Call cb, container&& list1, container&& list2, Arg... arg)
+	{
+		Node* root1 = generate_BT<Node>(std::forward<container>(list1));
+		Node* root2 = generate_BT<Node>(std::forward<container>(list1));
+		auto result = std::invoke(cb, root1, root2, arg...);
+		printListNode(result);
+		deleteNodeList(result);
+
+	}
+
+
+	template <typename Node, typename container, typename Call, typename... Arg>
+	void TestTreeAlgorithm(Call cb, container&& list1, container&& list2, container&& list3, Arg... arg)
+	{
+		Node* root1 = generate_BT<Node>(std::forward<container>(list1));
+		Node* root2 = generate_BT<Node>(std::forward<container>(list2));
+		Node* root3 = generate_BT<Node>(std::forward<container>(list3));
+		auto result = std::invoke(cb, root1, root2, root3, arg...);
+		printListNode(result);
+		deleteNodeList(result);
+
+	}
+
+	//此處如果cb中刪除元素,則會内存泄漏
+	template <typename Node, typename container, typename Call, typename... Arg>
+	void TestNodeAlgorithm(Call cb, container&& list, Arg... arg)
+	{
+		Node* root = generateList<Node>(std::forward<container>(list));
+		Node* result = std::invoke(cb, root, arg...);
+		printListNode(result);
+		deleteNodeList(result);
+	}
+
+	template <typename Node, typename container, typename Call, typename... Arg>
+	void TestNodeAlgorithmN(Call cb, container&& list1, container&& list2, Arg... arg)
+	{
+		Node* root1 = generateList<Node>(std::forward<container>(list1));
+		Node* root2 = generateList<Node>(std::forward<container>(list1));
+		auto result = std::invoke(cb, root1, root2, arg...);
+		printListNode(result);
+		deleteNodeList(result);
+
+	}
+
+
+	template <typename Node, typename container, typename Call, typename... Arg>
+	void TestNodeAlgorithmN(Call cb, container&& list1, container&& list2, container&& list3, Arg... arg)
+	{
+		Node* root1 = generateList<Node>(std::forward<container>(list1));
+		Node* root2 = generateList<Node>(std::forward<container>(list2));
+		Node* root3 = generateList<Node>(std::forward<container>(list3));
+		auto result = std::invoke(cb, root1, root2, root3, arg...);
+		printListNode(result);
+		deleteNodeList(result);
+
+	}
+
+
+#endif //end of_HAS_CXX17
 
 	// u may use like this
 	//testhelper::testRvalue<vector<vector<int>>, vector<int>>(solution90::subsetsWithDup, { });
