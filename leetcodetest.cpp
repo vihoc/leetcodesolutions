@@ -379,7 +379,7 @@ namespace testhelper
 
 	template <typename Call, class Tuple, size_t... Is>
 	constexpr auto  invokecb(Call cb, Tuple t, std::index_sequence<Is...>) {
-		return cb(get<Is>(t)...);
+		cb(get<Is>(t)...);
 	}
 
 	template <typename Node, typename Container, typename Call, typename... Arg>
@@ -393,14 +393,14 @@ namespace testhelper
 			},
 			argtuple);
 
-		auto result = invokecb(std::forward<Call>(cb), std::forward<decltype(newArg)>(newArg), std::make_index_sequence < tuple_size<decltype(newArg)>{} > {});
+		invokecb(std::forward<Call>(cb), std::forward<decltype(newArg)>(newArg), std::make_index_sequence < tuple_size<decltype(newArg)>{} > {});
 		//TODO 如果invoke中傳入的算法 將樹内元素刪除,將會引起一些内存泄漏, 
 		//以下如將全部參數生成的樹各自delete, 將可能引起av.
 #if _DEBUG
 		cout << "here is debug print" << endl;
 
 
-		cout << "original data:"
+		cout << "original data:";
 			std::apply([](auto&&... args)
 				{
 					((AlgorithmNcb_helper<Node>(PrintTree<Node>, args)), ...);
@@ -409,16 +409,16 @@ namespace testhelper
 
 		cout << "end of debug";
 #endif
-		cout << "result data" << endl;
-		AlgorithmNcb_helper<Node>(PrintTree<Node>, result);
-		cout << "end of result;" << endl;
-		AlgorithmNcb_helper<Node>(DeleteTree<Node>, result)
+// 		cout << "result data" << endl;
+// 		AlgorithmNcb_helper<Node>(PrintTree<Node>, result);
+// 		cout << "end of result;" << endl;
+// 		AlgorithmNcb_helper<Node>(DeleteTree<Node>, result);
 			//所以這裏是delete生成的原數據的代碼, 沒什麽卵用 只要算法中有修改節點指針. 就會出錯
-	// 		std::apply([](auto&&... args)
-	// 			{
-	// 				((AlgorithmNcb_helper<Node>(DeleteTree<Node>, args)), ...);
-	// 			},
-	// 			newArg);
+	 		std::apply([](auto&&... args)
+				{
+					((AlgorithmNcb_helper<Node>(DeleteTree<Node>, args)), ...);
+				},
+				newArg);
 	}
 
 	template <typename Node, typename Container, typename Call, typename... Arg>
@@ -432,13 +432,13 @@ namespace testhelper
 			},
 			argtuple);
 
-		auto result = invokecb(std::forward<Call>(cb), std::forward<decltype(newArg)>(newArg), std::make_index_sequence < tuple_size<decltype(newArg)>{} > {});
+		invokecb(std::forward<Call>(cb), std::forward<decltype(newArg)>(newArg), std::make_index_sequence < tuple_size<decltype(newArg)>{} > {});
 
 #if _DEBUG
 		cout << "here is debug print" << endl;
 
 
-		cout << "original data:"
+		cout << "original data:";
 			std::apply([](auto&&... args)
 				{
 					((AlgorithmNcb_helper<Node>(printListNode<Node>, args)), ...);
@@ -447,15 +447,15 @@ namespace testhelper
 
 		cout << "end of debug";
 #endif
-		cout << "result data" << endl;
-		AlgorithmNcb_helper<Node>(printListNode<Node>, result);
-		cout << "end of result;" << endl;
-		AlgorithmNcb_helper<Node>(deleteNodeList<Node>, result)
-			// 		std::apply([](auto&&... args)
-			// 			{
-			// 				((AlgorithmNcb_helper<Node>(DeleteTree<Node>, args)), ...);
-			// 			},
-			// 			newArg);
+// 		cout << "result data" << endl;
+// 		AlgorithmNcb_helper<Node>(printListNode<Node>, result);
+// 		cout << "end of result;" << endl;
+// 		AlgorithmNcb_helper<Node>(deleteNodeList<Node>, result)
+			 		std::apply([](auto&&... args)
+			 			{
+			 				((AlgorithmNcb_helper<Node>(printListNode<Node>, args)), ...);
+			 			},
+			 			newArg);
 	}
 
 
@@ -4122,6 +4122,35 @@ namespace solution99
 		};
 		helper(root);
 		swap(wrong1->val, wrong2->val);
+	}
+}
+
+namespace solution105
+{
+	struct TreeNode {
+		int val;
+		TreeNode* left;
+		TreeNode* right;
+		TreeNode() : val(0), left(nullptr), right(nullptr) {}
+		TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+		TreeNode(int x, TreeNode* left, TreeNode* right) : val(x), left(left), right(right) {}
+
+	};
+	TreeNode* buildTree(vector<int>& preorder, vector<int>& inorder)
+	{
+		assert(preorder.size() == inorder.size());
+		int index = 0;
+		function<TreeNode* (int, int)> helper;
+		helper = [&helper, &index, &preorder, &inorder](int left, int right) ->TreeNode*
+		{
+			if (left > right) return nullptr;
+			TreeNode* root = new TreeNode(preorder[index++]);
+			int pos = distance(inorder.begin(), find(inorder.begin(), inorder.end(), root->val));
+			if (pos > 0) root->left = helper(left, pos - 1);
+			if (pos < inorder.size() - 1) root->right = helper(pos + 1, right);
+			return root;
+		};
+		return helper(0, inorder.size() - 1);
 	}
 }
 
