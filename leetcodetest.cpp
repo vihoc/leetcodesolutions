@@ -4154,6 +4154,78 @@ namespace solution105
 	}
 }
 
+namespace solution106
+{
+	struct TreeNode {
+		int val;
+		TreeNode* left;
+		TreeNode* right;
+		TreeNode() : val(0), left(nullptr), right(nullptr) {}
+		TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+		TreeNode(int x, TreeNode* left, TreeNode* right) : val(x), left(left), right(right) {}
+
+	};
+
+	TreeNode* buildTree(vector<int>& inorder, vector<int>& postorder) {
+		assert(postorder.size() == inorder.size());
+		int index = postorder.size() - 1;
+		function<TreeNode* (int, int)> helper;
+		helper = [&helper, &index, &postorder, &inorder](int left, int right) ->TreeNode*
+		{
+			if (left > right) return nullptr;
+			TreeNode* root = new TreeNode(postorder[index--]);
+			int pos = distance(inorder.begin(), find(inorder.begin(), inorder.end(), root->val));
+
+			if (pos < inorder.size() - 1) root->right = helper(pos + 1, right);
+			if (pos > 0) root->left = helper(left, pos - 1);
+			return root;
+		};
+		return helper(0, inorder.size() - 1);
+	}
+}
+
+namespace solution107
+{
+	struct TreeNode {
+		int val;
+		TreeNode* left;
+		TreeNode* right;
+		TreeNode() : val(0), left(nullptr), right(nullptr) {}
+		TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+		TreeNode(int x, TreeNode* left, TreeNode* right) : val(x), left(left), right(right) {}
+
+	};
+	vector<vector<int>> levelOrderBottom(TreeNode* root) {
+		if (nullptr == root) return { {} };
+		if (nullptr == root->left && nullptr == root->right) return { {root->val} };
+		vector<vector<int>> ret;
+		vector<int> tempv;
+		queue<TreeNode*> que;
+		que.push(root);
+		int step = que.size();
+		while (step-- > 0)
+		{
+			auto temp = que.front();
+			que.pop();
+			tempv.emplace_back(temp->val);
+			if (nullptr != temp)
+			{
+				if (nullptr != temp->left) que.push(temp->left);
+				if (nullptr != temp->right) que.push(temp->right);
+			}
+			if (0 == step)
+			{
+				step = que.size();
+				ret.emplace_back(tempv);
+				tempv.clear();
+			}
+		}
+		reverse(begin(ret), end(ret));
+		return ret;
+	}
+
+}
+
 int main()
 {
 	/*
@@ -4521,6 +4593,7 @@ int main()
 // cout << "============= " << endl;
 // solution48::rotate(res);
 // solution48::printVector(res);
+
  ULONGLONG t2 = GetTickCount64();
 
 
