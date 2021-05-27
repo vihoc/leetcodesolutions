@@ -57,7 +57,9 @@ namespace testhelper
 	template <typename Node>
 	void printListNode(Node* p)
 	{
+		cout << "start to print List:" << endl;
 		std::cout << "[";
+		if (nullptr == p) cout << "Empty list";
 		while (p)
 		{
 			std::cout << p->val;
@@ -66,6 +68,7 @@ namespace testhelper
 			p = p->next;
 		}
 		std::cout << "]" << std::endl;
+		cout << "end of print." << endl;
 	}
 
 	template <typename Node>
@@ -218,6 +221,7 @@ namespace testhelper
 		}
 		else
 		{
+			cout << "start to print Tree:" << endl;
 			std::cout << std::endl << std::endl;
 			print(root, 0);
 			for (int i = 0; i < 80; ++i) {
@@ -225,7 +229,7 @@ namespace testhelper
 			}
 
 			std::cout << std::endl;
-
+			cout << "end of print." << endl;
 		}
 	}
 
@@ -278,34 +282,36 @@ namespace testhelper
 		root = que.front();
 		que.pop();
 		linkque.push(root);
-		int step = linkque.size();
-		while (step-- > 0)
+		while (!linkque.empty())
 		{
-			Node* temp = nullptr;
-			if (!linkque.empty())
+			int step = linkque.size();
+			for (int index = 0; index < step; ++index)
 			{
-				temp = linkque.front();
-				linkque.pop();
-			}
-			if (nullptr != temp)
-			{
-				if (!que.empty())
+				Node* temp = nullptr;
+				if (!linkque.empty())
 				{
-
-					temp->left = que.front();
-					que.pop();
-					linkque.push(temp->left);
-
+					temp = linkque.front();
+					linkque.pop();
 				}
-				if (!que.empty())
+				if (nullptr != temp)
 				{
+					if (!que.empty())
+					{
 
-					temp->right = que.front();
-					que.pop();
-					linkque.push(temp->right);
+						temp->left = que.front();
+						que.pop();
+						linkque.push(temp->left);
+
+					}
+					if (!que.empty())
+					{
+
+						temp->right = que.front();
+						que.pop();
+						linkque.push(temp->right);
+					}
 				}
 			}
-			if (0 == step) step = linkque.size();
 		}
 
 		return root;
@@ -474,34 +480,36 @@ namespace testhelper
 		root = que.front();
 		que.pop();
 		linkque.push(root);
-		int step = linkque.size();
-		while (step-- > 0)
+		while (!linkque.empty())
 		{
-			Node* temp = nullptr;
-			if (!linkque.empty())
+			int step = linkque.size();
+			for (int index = 0; index < step; ++index)
 			{
-				temp = linkque.front();
-				linkque.pop();
-			}
-			if (nullptr != temp)
-			{
-				if (!que.empty())
+				Node* temp = nullptr;
+				if (!linkque.empty())
 				{
-
-					temp->left = que.front();
-					que.pop();
-					linkque.push(temp->left);
-
+					temp = linkque.front();
+					linkque.pop();
 				}
-				if (!que.empty())
+				if (nullptr != temp)
 				{
+					if (!que.empty())
+					{
 
-					temp->right = que.front();
-					que.pop();
-					linkque.push(temp->right);
+						temp->left = que.front();
+						que.pop();
+						linkque.push(temp->left);
+
+					}
+					if (!que.empty())
+					{
+
+						temp->right = que.front();
+						que.pop();
+						linkque.push(temp->right);
+					}
 				}
 			}
-			if (0 == step) step = linkque.size();
 		}
 		return root;
 	}
@@ -4226,6 +4234,42 @@ namespace solution107
 
 }
 
+namespace solution109
+{
+	struct TreeNode {
+		int val;
+		TreeNode* left;
+		TreeNode* right;
+		TreeNode() : val(0), left(nullptr), right(nullptr) {}
+		TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+		TreeNode(int x, TreeNode* left, TreeNode* right) : val(x), left(left), right(right) {}
+
+	};
+	struct ListNode {
+		int val;
+		ListNode* next;
+		ListNode() : val(0), next(nullptr) {}
+		ListNode(int x) : val(x), next(nullptr) {}
+		ListNode(int x, ListNode* next) : val(x), next(next) {}
+	};
+	TreeNode* sortedListToBST(ListNode* head)
+	{
+		if (nullptr == head) return nullptr;
+		if (nullptr == head->next) return new TreeNode(head->val);
+		function<TreeNode* (ListNode*, ListNode*)> helper;
+		helper = [&helper](ListNode* begin, ListNode* end)-> TreeNode*
+		{
+			//if (nullptr == begin) return nullptr;
+			auto root{ begin };
+			for (auto fast{ begin }; fast != end and fast->next != end; fast = fast->next->next, root = root->next);
+			return root != end ? new TreeNode(root->val, nullptr != begin ? helper(begin, root) : nullptr, nullptr != root->next ? helper(root->next, end) : nullptr) : nullptr;
+		};
+
+		return helper(head, nullptr);
+
+	}
+}
+
 int main()
 {
 	/*
@@ -4593,6 +4637,8 @@ int main()
 // cout << "============= " << endl;
 // solution48::rotate(res);
 // solution48::printVector(res);
+
+
 
  ULONGLONG t2 = GetTickCount64();
 
