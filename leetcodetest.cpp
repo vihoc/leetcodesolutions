@@ -192,13 +192,16 @@ namespace testhelper
 	void printVectorResult2d(vector<vector<int>>&& res)
 	{
 		cout << "{";
-		for (auto&& itor = res.begin(); itor != res.end() - 1; ++itor)
+		if (!res.empty())
 		{
+			for (auto&& itor = res.begin(); itor != res.end() - 1; ++itor)
+			{
 
-			printContainerResult<vector>(std::forward<vector<int>>(*itor));
-			cout << ", ";
+				printContainerResult<vector>(std::forward<vector<int>>(*itor));
+				cout << ", ";
+			}
+			printContainerResult<vector>(std::forward<vector<int>>(res.back()));
 		}
-		printContainerResult<vector>(std::forward<vector<int>>(res.back()));
 		cout << "}" << endl;
 	}
 	template<typename Node>
@@ -4267,6 +4270,52 @@ namespace solution109
 
 		return helper(head, nullptr);
 
+	}
+}
+
+namespace solution113
+{
+	struct TreeNode {
+		int val;
+		TreeNode* left;
+		TreeNode* right;
+		TreeNode() : val(0), left(nullptr), right(nullptr) {}
+		TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+		TreeNode(int x, TreeNode* left, TreeNode* right) : val(x), left(left), right(right) {}
+
+	};
+
+	vector<vector<int>> pathSum(TreeNode* root, int targetSum) {
+		if (nullptr == root) return{};
+
+		if (nullptr == root->left and nullptr == root->right)
+		{
+			if (targetSum != root->val) return {};
+			else return { {root->val} };
+		}
+		vector<vector<int>> ret;
+		vector<int> temp;
+		function<void(TreeNode*, int)> helper;
+		helper = [&targetSum, &ret, &temp, &helper](TreeNode* pos, int sum)
+		{
+
+			temp.emplace_back(pos->val);
+			if (nullptr == pos->left && nullptr == pos->right)
+			{
+				if (sum + pos->val == targetSum)
+				{
+					ret.emplace_back(temp);
+					temp.pop_back();
+					return;
+				}
+			}
+			if (nullptr != pos->left) helper(pos->left, sum + pos->val);
+
+			if (nullptr != pos->right) helper(pos->right, sum + pos->val);
+			temp.pop_back();
+		};
+		helper(root, 0);
+		return ret;
 	}
 }
 
