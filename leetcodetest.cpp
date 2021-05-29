@@ -4319,6 +4319,165 @@ namespace solution113
 	}
 }
 
+/// try following code to test :
+// testhelper::TestTreeAlgorithm<solution116::Node, vector<optional<int>>>([](solution116::Node* root)
+// 	{
+// 
+// 		solution116::print(solution116::connect2(root));
+// 	},
+// 	vector<optional<int>>{1, 2, 3, 4, 5, 6, 7});
+namespace solution116
+{
+	class Node {
+	public:
+		int val;
+		Node* left;
+		Node* right;
+		Node* next;
+
+		Node() : val(0), left(nullptr), right(nullptr), next(nullptr) {}
+
+		Node(int _val) : val(_val), left(nullptr), right(nullptr), next(nullptr) {}
+
+		Node(int _val, Node* _left, Node* _right, Node* _next)
+			: val(_val), left(_left), right(_right), next(_next) {}
+	};
+	Node* connect(Node* root) {
+		if (nullptr == root) return root;
+		if (nullptr == root->left && nullptr == root->right) return root;
+
+		queue<Node*> que;
+		que.push(root);
+		while (!que.empty())
+		{
+			int size = que.size();
+			for (auto index = 0; index != size - 1; ++index)
+			{
+				auto ptr = que.front();
+				que.pop();
+
+				ptr->next = que.front();
+
+				if (nullptr != ptr->left) que.push(ptr->left);
+				if (nullptr != ptr->right) que.push(ptr->right);
+			}
+			auto ptr = que.front();
+			que.pop();
+			if (nullptr != ptr->left) que.push(ptr->left);
+			if (nullptr != ptr->right) que.push(ptr->right);
+		}
+
+		return root;
+	}
+	//Recursive solution
+	Node* connect2(Node* root)
+	{
+		if (nullptr == root or (nullptr == root->left and nullptr == root->right))
+			return root;
+		Node* ptrl = root->left;
+		Node* ptrr = root->right;
+		while (nullptr != ptrl)
+		{
+			ptrl->next = ptrr;
+			ptrl = ptrl->right;
+			ptrr = ptrr->left;
+		}
+		if (nullptr != root->left) root->left = connect2(root->left);
+		if (nullptr != root->right) root->right = connect2(root->right);
+		return root;
+	}
+
+
+	void print(Node* root)
+	{
+		cout << "[";
+		auto ptr = root;
+		while (ptr)
+		{
+			auto tempp = ptr;
+			while (tempp)
+			{
+				cout << tempp->val << ",";
+				tempp = tempp->next;
+
+			}
+			ptr = ptr->left;
+			cout << "#";
+			if (nullptr != ptr)
+				cout << ",";
+		}
+		cout << "]" << endl;
+	}
+
+}
+
+/// try following code to test :
+/// testhelper::TestTreeAlgorithm<solution117::Node, vector<optional<int>>>([](solution117::Node* root)
+// {
+// 
+// 	solution117::print(solution117::connect2(root));
+// },
+// vector<optional<int>>{1, 2, 3, 4, 5, {}, 7
+// });
+
+namespace solution117
+{
+
+	Node* connect(Node* root)
+	{
+
+		Node* node = root;
+		Node* levelHead = new Node(0);
+
+		while (node) { 
+		
+			Node* needle = levelHead;
+
+			while (node) {
+
+				if (node->left) {
+					needle->next = node->left;
+					needle = needle->next;
+				}
+				if (node->right) {
+					needle->next = node->right;
+					needle = needle->next;
+				}
+
+				node = node->next; 
+			}
+		
+			node = levelHead->next;
+			levelHead->next = nullptr;
+		}
+		return root;
+
+	}
+
+
+	void print(Node* root)
+	{
+		cout << "[";
+		auto ptr = root;
+		while (ptr)
+		{
+			auto tempp = ptr;
+			while (tempp)
+			{
+				cout << tempp->val << ",";
+				tempp = tempp->next;
+
+			}
+			ptr = ptr->left;
+			cout << "#";
+			if (nullptr != ptr)
+				cout << ",";
+		}
+		cout << "]" << endl;
+	}
+
+}
+
 int main()
 {
 	/*
