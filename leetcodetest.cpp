@@ -189,7 +189,8 @@ namespace testhelper
 	//´òÓ¡2dÊý×é, 
 	// testhelper::printVectorResult2d(testhelper::testRvalue<vector<vector<int>>, vector<int>>(solution90::subsetsWithDup, { }));
 	// easy to check result
-	void printVectorResult2d(vector<vector<int>>&& res)
+	template <typename T>
+	void printVectorResult2d(vector<vector<T>>&& res)
 	{
 		cout << "{";
 		if (!res.empty())
@@ -197,10 +198,10 @@ namespace testhelper
 			for (auto&& itor = res.begin(); itor != res.end() - 1; ++itor)
 			{
 
-				printContainerResult<vector>(std::forward<vector<int>>(*itor));
+				printContainerResult<vector>(std::forward<vector<T>>(*itor));
 				cout << ", ";
 			}
-			printContainerResult<vector>(std::forward<vector<int>>(res.back()));
+			printContainerResult<vector>(std::forward<vector<T>>(res.back()));
 		}
 		cout << "}" << endl;
 	}
@@ -4477,6 +4478,334 @@ namespace solution117
 	}
 
 }
+
+namespace solution120
+{
+	int minimumTotal(vector<vector<int>>& triangle) {
+		if (0 == triangle.size()) return 0;
+		if (1 == triangle.size()) return triangle.back().back();
+
+		vector<int> ret(std::move(triangle.back()));
+
+		for (int index = triangle.size() - 2; index >= 0; --index)
+		{
+			auto& temp = triangle[index];
+			assert(temp.size() - 1 == index);
+			for (int indexcol = 0; indexcol <= index; ++indexcol)
+			{
+				ret[indexcol] = min(ret[indexcol], ret[indexcol + 1]) + temp[indexcol];
+			}
+		}
+		return ret[0];
+	}
+}
+
+
+namespace solution128
+{
+	int longestConsecutive(vector<int>& nums) {
+		int size = nums.size();
+		if (size < 2) return size;
+		unordered_set<int> set;
+		for (auto& e : nums)
+		{
+			set.emplace(e);
+		}
+		int ret = 0;
+		for (auto& e : set)
+		{
+			//			//try to use count, but run slow
+			// 			if (set.count(e - 1)) continue;
+			if (set.end() != set.find(e - 1)) continue;
+			int consecutive = e;
+			int len = 1;
+			// 			while (set.count(++consecutive)) len++;
+			while (set.end() != set.find(++consecutive)) len++;
+			ret = max(len, ret);
+		}
+		return ret;
+	}
+	//this algorithm abit faster
+	int longestConsecutive2(vector<int>& nums)
+	{
+		int size = nums.size();
+		if (size < 2) return size;
+		sort(nums.begin(), nums.end());
+		auto bound = unique(nums.begin(), nums.end());
+		int newsize = distance(nums.begin(), bound);
+		int len = 1;
+		int ret = 0;
+		for (auto index = 0; index < newsize - 1; ++index)
+		{
+			if (nums[index] + 1 == nums[index + 1])
+			{
+				len++;
+			}
+			else if (nums[index] == nums[index + 1])
+			{
+				;
+			}
+			else
+			{
+				if (len > ret) ret = len;
+				len = 1;
+			}
+		}
+		if (len > ret) ret = len;
+		return ret;
+	}
+
+}
+
+namespace solution129
+{
+	struct TreeNode {
+		int val;
+		TreeNode* left;
+		TreeNode* right;
+		TreeNode() : val(0), left(nullptr), right(nullptr) {}
+		TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+		TreeNode(int x, TreeNode* left, TreeNode* right) : val(x), left(left), right(right) {}
+
+	};
+	int sumNumbers(TreeNode* root)
+	{
+		if (nullptr == root) return 0;
+		if (nullptr == root->left and nullptr == root->right) return root->val;
+		function<int(TreeNode*, int)> helper;
+		helper = [&helper](TreeNode* root, int sum) -> int
+		{
+			//if (nullptr == root) return sum;
+			int total = 0;
+			if (nullptr != root->left) total += helper(root->left, (sum + root->val) * 10);
+			if (nullptr != root->right) total += helper(root->right, (sum + root->val) * 10);
+			if (0 == total) total = sum + root->val;
+			return total;
+		};
+		return helper(root, 0);
+	}
+}
+
+namespace solution130
+{
+	void solve(vector<vector<char>>& board) {
+		int rowsize = board.size();
+		int colsize = board.back().size();
+		if (1 > rowsize) return;
+		if (1 >= colsize) return;
+		constexpr char F = 'F';
+		constexpr char X = 'X';
+		constexpr char O = 'O';
+		function<void(int, int)> helper;
+
+		helper = [&board, &helper, rowsize, colsize, F, O](int temprow, int tempcol) ->void
+		{
+			if (temprow < 0 or temprow >= rowsize or tempcol < 0 or tempcol >= colsize) {
+				return;
+			}
+			auto& c = board[temprow][tempcol];
+			if (O == c)
+			{
+				c = F;
+				helper(temprow - 1, tempcol);
+				helper(temprow, tempcol - 1);
+				helper(temprow + 1, tempcol);
+				helper(temprow, tempcol + 1);
+			}
+		};
+
+		for (int index = 0; index < rowsize; ++index)
+		{
+			if (O == board[index][0]) helper(index, 0);
+			if (O == board[index][colsize - 1]) helper(index, colsize - 1);
+		}
+
+		for (int index = 1; index < colsize - 1; ++index)
+		{
+			if (O == board[0][index]) helper(0, index);
+			if (O == board[rowsize - 1][index]) helper(rowsize - 1, index);
+		}
+		for (auto& e : board)
+		{
+			for (auto& c : e)
+			{
+				if (F == c) c = O;
+				else if (O == c) c = X;
+			}
+		}
+	}
+
+	void test(vector<vector<char>>& board)
+	{
+		solve(std::forward<decltype(board)>(board));
+		testhelper::printVectorResult2d(std::move(board));
+	}
+}
+
+
+namespace solution125
+{
+	bool isPalindrome(string s) {
+		function<bool(string&&)> Palindrome;
+		Palindrome = [](const string&& s) ->bool
+		{
+			if (0 == s.length()) return true;
+			if (1 == s.length()) return true;
+			auto end = s.cbegin();
+			advance(end, s.length() / 2);
+			auto index = s.cbegin();
+			auto reversebegin = s.crbegin();
+			while (index <= end)
+			{
+				if (*index++ != *reversebegin++)
+				{
+					return false;
+				}
+			}
+			return true;
+		};
+		function<string && (string&&)> eat;
+		eat = [](string&& s)->string&&
+		{
+			int index = 0;
+			int pos = 0;
+			constexpr char endchar = '\0';
+			while (endchar != s[index])
+			{
+				if (isalpha(s[index]))
+				{
+					s[pos++] = tolower(s[index]);
+				}
+				else if (isdigit(s[index]))
+				{
+					s[pos++] = s[index];
+				}
+				++index;
+			}
+			s = s.erase(pos, index - pos);
+			return std::move(s);
+		};
+		return Palindrome(std::move(eat(std::move(s))));
+	}
+}
+
+namespace solution131
+{
+	vector<vector<string>> partition(string s) {
+		size_t length = s.length();
+		if (1 == length) return{ {s} };
+		vector<vector<string>> ret;
+		vector<string> temp;
+
+		function<void(int)> helper;
+		function<bool(const string&&)> isPalindrome;
+		isPalindrome = [](const string&& s) ->bool
+		{
+			if (1 == s.length()) return true;
+			auto end = s.cbegin();
+			advance(end, s.length() / 2);
+			auto index = s.cbegin();
+			auto reversebegin = s.crbegin();
+			while (index <= end)
+			{
+				if (*index++ != *reversebegin++)
+				{
+					return false;
+				}
+			}
+			return true;
+		};
+
+		function<bool(int, int)> isPalindrome2;
+		isPalindrome2 = [&s](int l, int r) ->bool
+		{
+			while (l < r)
+			{
+				if (s[l++] != s[r--]) return false;
+			}
+			return true;
+		};
+
+		helper = [&helper, &isPalindrome2, &ret, &temp, &length, &s](int pos)
+		{
+			if (pos >= length)
+			{
+				ret.emplace_back(temp);
+				return;
+			}
+			for (int index = 1; index <= length - pos; ++index)
+			{
+
+				if (0 == index) continue;
+				//string temps = s.substr(pos, index);
+				//if (isPalindrome(temps)
+				if (isPalindrome2(pos, pos + index))
+				{
+
+					temp.emplace_back(s.substr(pos, index));
+					helper(pos + index);
+					temp.pop_back();
+				}
+			}
+		};
+		helper(0);
+		return ret;
+	}
+}
+
+namespace solution134
+{
+
+	constexpr int canottravel = -1;
+	int canCompleteCircuit(vector<int>& gas, vector<int>& cost)
+	{
+		//constexpr int canottravel = -1;
+		int length = gas.size();
+		assert(length == cost.size());
+		int pos = 0;
+		for (int index = 0; index < length; index += pos + 1)
+		{
+			int gassum = 0, costsum = 0;
+			pos = 0;
+			for (; pos < length; ++pos)
+			{
+				int realpos = (index + pos) % length;
+				gassum += gas[realpos];
+				costsum += cost[realpos];
+				if (costsum > gassum)
+				{
+					break;
+				}
+			}
+			if (pos == length) return index;
+		}
+		return canottravel;
+	}
+
+
+	int canCompleteCircuit2(vector<int>& gas, vector<int>& cost)
+	{
+		//constexpr int canottravel = -1;
+		int length = gas.size();
+		assert(length == cost.size());
+
+		int curleftfuel = 0;
+		int leftfuelfromstart = 0;
+		int pos = 0;
+		for (int index = 0; index < length; ++index)
+		{
+			curleftfuel += gas[index] - cost[index];
+			if (curleftfuel < 0)
+			{
+				leftfuelfromstart += curleftfuel;
+				curleftfuel = 0;
+				pos = index + 1;
+			}
+		}
+		return (curleftfuel + leftfuelfromstart >= 0) ? pos : canottravel;
+	}
+}
+
 
 int main()
 {
