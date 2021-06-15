@@ -4806,6 +4806,422 @@ namespace solution134
 	}
 }
 
+namespace solution139
+{
+	bool wordBreak(string s, vector<string>& wordDict) {
+		unordered_set<string> wordset;
+		int maxsize = 0;
+		int minsize = INT_MAX;
+		int slength = s.length();
+		vector<bool> result(slength + 1);
+		for (auto& word : wordDict)
+		{
+			wordset.insert(word);
+			if (word.size() > maxsize) maxsize = word.length();
+			if (word.size() < minsize) minsize = word.length();
+
+		}
+		result[0] = true;
+		for (int pos = 0; pos <= slength; ++pos)
+		{
+			for (int index = max(pos - maxsize, 0); pos - index >= minsize; ++index)
+			{
+				if (result[index] and (wordset.find(s.substr(index, pos - index)) != wordset.end()))
+				{
+					result[pos] = true;
+					break;
+				}
+			}
+		}
+		return result.back();
+	}
+	constexpr int charlength = 26;
+	struct trie
+	{
+		trie* character[charlength];
+		bool isend;
+		trie() :isend{ false } {
+			for (int index = 0; index < charlength; ++index)
+			{
+				character[index] = nullptr;
+			}
+		}
+	};
+	bool wordBreak2(string s, vector<string>& wordDict)
+	{
+		//unordered_set
+		trie* root = new trie();
+		map<char, bool> smap;
+		unordered_map<string, int> set;
+		for (auto& ch : s)
+		{
+			smap[ch] = false;
+		}
+		for (auto& word : wordDict)
+		{
+			trie* temp = root;
+			for (auto& ch : word)
+			{
+				smap[ch] = true;
+				auto& tempnode = temp->character[ch - 'a'];
+				if (nullptr == tempnode)
+				{
+					tempnode = new trie();
+				}
+				temp = tempnode;
+			}
+			temp->isend = true;
+		}
+		for (auto e : smap)
+		{
+			if (false == e.second) return false;
+		}
+		function<bool(string&&)> helper;
+		helper = [&helper, &root, &set](string&& s) ->bool
+		{
+			trie* temp = root;
+			if (0 == s.length())
+			{
+				return true;
+			}
+			auto itor = set.find(s);
+			if (set.end() != itor)
+			{
+				if (0 != itor->second) return itor->second - 1;
+			}
+			int index = 0;
+			for (auto& ch : s)
+			{
+				auto& tempnode = temp->character[ch - 'a'];
+				if (nullptr == tempnode)
+				{
+					set[s] = 1;
+					return false;
+				}
+				if (false == tempnode->isend)
+				{
+					temp = tempnode;
+				}
+				else
+				{
+					if (true == helper(s.substr(index + 1, s.size() - index)))
+					{
+						set[s] += 1;
+						return true;
+					}
+					else
+					{
+						temp = tempnode;
+					}
+				}
+				set[s] = 1;
+				++index;
+			}
+			return false;
+		};
+		return helper(std::forward<string>(s));
+	}
+
+}
+
+namespace solution142
+{
+
+	struct ListNode {
+		int val;
+		ListNode* next;
+		ListNode(int x) : val(x), next(NULL) {}
+
+	};
+
+	ListNode* detectCycle(ListNode* head)
+	{
+		if (nullptr == head or nullptr == head->next) return nullptr;
+
+		ListNode* fast = head;
+		ListNode* slow = head;
+		do
+		{
+			slow = slow->next;
+			fast = fast->next->next;
+		} while (nullptr != fast and nullptr != fast->next and slow != fast);
+
+		//if (nullptr == fast or nullptr == fast->next) return nullptr;
+		if (slow == fast)
+		{
+			slow = head;
+			while (fast != slow)
+			{
+				fast = fast->next;
+				slow = slow->next;
+			}
+			return slow;
+		}
+		return nullptr;
+
+	}
+}
+
+namespace solution141
+{
+
+	struct ListNode {
+		int val;
+		ListNode* next;
+		ListNode(int x) : val(x), next(NULL) {}
+
+	};
+
+	bool detectCycle(ListNode* head)
+	{
+		if (nullptr == head or nullptr == head->next) return false;
+
+		ListNode* fast = head;
+		ListNode* slow = head;
+		do
+		{
+			slow = slow->next;
+			fast = fast->next->next;
+		} while (nullptr != fast and nullptr != fast->next and slow != fast);
+
+		//if (nullptr == fast or nullptr == fast->next) return nullptr;
+		if (slow == fast)
+		{
+			slow = head;
+			while (fast != slow)
+			{
+				fast = fast->next;
+				slow = slow->next;
+			}
+			return true;
+		}
+		return false;
+
+	}
+}
+
+namespace solution146
+{
+	class LRUCache {
+	private:
+		using itor = list<pair<int, int>>::iterator;
+		itor moveNodeToHead(itor node)
+		{
+			cachelist.splice(cachelist.begin(), cachelist, node);
+			return cachelist.begin();
+		}
+		int deleteTail() //return key
+		{
+			auto data = cachelist.back().first;
+			cachelist.pop_back();
+			return data;
+		}
+	public:
+		LRUCache(int capacity) :cachecapacity{ capacity }, cachesize{ 0 } {
+
+		}
+
+		int get(int key) {
+			auto content = cache.find(key);
+			if (cache.end() != content)
+			{
+				content->second = moveNodeToHead(content->second);
+				return content->second->second;
+			}
+			return -1;
+		}
+
+		void put(int key, int value) {
+			auto content = cache.find(key);
+			if (cache.end() != content)
+			{
+				*(content->second) = make_pair(key, value);
+				content->second = moveNodeToHead(content->second);
+			}
+			else
+			{
+				cachelist.emplace_front(make_pair(key, value));
+				cache[key] = cachelist.begin();
+				++cachesize;
+				if (cachesize > cachecapacity)
+				{
+					int deletekey = deleteTail();
+					cache.erase(deletekey);
+					--cachesize;
+				}
+			}
+		}
+	private:
+		int cachecapacity;
+		int cachesize;
+		list<pair<int, int>> cachelist;
+
+		map<int, itor> cache;
+	};
+	//todo testtuple
+}
+
+namespace solution147
+{
+
+	struct ListNode {
+		int val;
+		ListNode* next;
+		ListNode() : val(0), next(nullptr) {}
+		ListNode(int x) : val(x), next(nullptr) {}
+		ListNode(int x, ListNode* next) : val(x), next(next) {}
+
+	};
+
+
+	ListNode* insertionSortList(ListNode* head)
+	{
+		ListNode** posptr = &head;
+		ListNode** forwardptr;
+
+		while (*posptr != nullptr) {
+			// find node
+			forwardptr = &head;
+			while (*forwardptr != *posptr && (*forwardptr)->val <= (*posptr)->val) {
+				forwardptr = &(*forwardptr)->next;
+			}
+			// save the nextpointer of pos
+			ListNode* t = *posptr;
+			*posptr = (*posptr)->next;
+
+			t->next = *forwardptr;
+			*forwardptr = t;
+			// insert
+			if (*posptr == *forwardptr) {
+				posptr = &(*posptr)->next;
+			}
+		}
+		return head;
+	}
+
+}
+
+namespace solution148
+{
+	struct ListNode {
+		int val;
+		ListNode* next;
+		ListNode() : val(0), next(nullptr) {}
+		ListNode(int x) : val(x), next(nullptr) {}
+		ListNode(int x, ListNode* next) : val(x), next(next) {}
+
+	};
+	ListNode* sortList(ListNode* head) {
+
+		function<ListNode* (ListNode*, ListNode*)> merge;
+		merge = [](ListNode* ptrFront, ListNode* ptrRear)->ListNode*
+		{
+			ListNode dummy(0);
+			ListNode* temproot = &dummy;
+
+			while (nullptr != ptrFront && nullptr != ptrRear)
+			{
+				if (ptrFront->val < ptrRear->val)
+				{
+					temproot->next = ptrFront;
+					ptrFront = ptrFront->next;
+				}
+				else
+				{
+					temproot->next = ptrRear;
+					ptrRear = ptrRear->next;
+				}
+				temproot = temproot->next;
+			}
+			if (nullptr != ptrFront) temproot->next = ptrFront;
+			if (nullptr != ptrRear) temproot->next = ptrRear;
+
+			return dummy.next;
+		};
+
+		if (nullptr == head or nullptr == head->next) return head;
+		ListNode* slow = head;
+		ListNode* fast = head;
+		ListNode* prev = nullptr;
+
+		while (nullptr != fast && nullptr != fast->next)
+		{
+			prev = slow;
+			slow = slow->next;
+			fast = fast->next->next;
+		}
+
+		if (nullptr != prev)prev->next = nullptr;
+		return merge(sortList(head), sortList(slow));
+	}
+}
+
+namespace solution150
+{
+	int evalRPN(vector<string>& tokens) {
+		int tokenlength = tokens.size();
+		if (0 == tokenlength) return 0;
+		if (1 == tokens.size()) return stoi(tokens.back());
+
+		stack<int> RPNstack;
+
+		constexpr auto helper = [](const char& ch) ->bool
+		{
+			return '+' == ch || '-' == ch || '*' == ch || '/' == ch;
+		};
+
+		for (const auto& token : tokens)
+		{
+			auto& ch = token[0];
+			if (1 == token.length() && helper(ch))
+			{
+				int r = RPNstack.top();
+				RPNstack.pop();
+				int l = RPNstack.top();
+				RPNstack.pop();
+				int result = 0;
+				if ('+' == ch) result = l + r;
+				else if ('-' == ch) result = l - r;
+				else if ('*' == ch) result = l * r;
+				else if ('/' == ch) result = l / r;
+				RPNstack.push(result);
+			}
+			else
+			{
+				RPNstack.push(stoi(token));
+			}
+		}
+		return RPNstack.top();
+	}
+}
+
+
+namespace solution151
+{
+	string reverseWords(string s) {
+		string ret;
+		s = " " + s;
+		int end = s.length() - 1;
+		bool isword = false;
+		for (int index = s.length() - 1; index >= 0; --index)
+		{
+			if (' ' == s[index])
+			{
+				if (isword)
+				{
+					ret = ret + s.substr(index + 1, end - index) + " ";
+				}
+				end = index - 1;
+				isword = false;
+			}
+			else
+			{
+				if (!isword) isword = true;
+			}
+		}
+		ret.pop_back();
+		return ret;
+	}
 
 int main()
 {
