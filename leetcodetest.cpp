@@ -1680,32 +1680,34 @@ namespace solution49
 	std::vector<std::vector<std::string>> groupAnagrams(std::vector<std::string>& strs) {
 		std::unordered_map<std::string, std::vector<std::string>> map;
 		std::vector<std::vector<std::string>> ret;
-		if (1 == strs.size())  ret.emplace_back(strs);
-		
-		for (auto& str : strs)
+		if (1 == strs.size())
 		{
-			std::vector<int> table(26);
-			for (char c : str)
+			ret.emplace_back(strs);
+		}else{
+			for (auto& str : strs)
 			{
-				table[static_cast<int>(c) - 'a']++;
+				std::vector<int> table(26);
+				for (char c : str)
+				{
+					table[static_cast<int>(c) - 'a']++;
+				}
+				string out;
+				out.reserve(26);
+				for (auto count : table)
+				{
+					//out += '#';
+					out += std::to_string(count + 'a');
+				}
+				map[out].push_back(str);
 			}
-			string out;
-			out.reserve(26);
-			for (auto count : table)
+			ret.reserve(map.size());
+			for (auto& entry : map)
 			{
-				//out += '#';
-				out += std::to_string(count + 'a');
+				ret.emplace_back(std::move(entry.second));
 			}
-			map[out].push_back(str);
-		}
-		ret.reserve(map.size());
-		for (auto& entry : map)
-		{
-			ret.emplace_back(std::move(entry.second));
 		}
 		return ret;
 	}
-	
 };
 
 
@@ -5222,6 +5224,800 @@ namespace solution151
 		ret.pop_back();
 		return ret;
 	}
+
+namespace solution152
+{
+	int maxProduct(vector<int>& nums) {
+		if (0 == nums.size()) return 0;
+		int maxN = nums.front();
+		int minN = nums.front();
+		int ret = nums.front();
+		int length = nums.size();
+		for (int index = 1; index < length; ++index)
+		{
+			int& num = nums[index];
+			int tempmax = maxN;
+			int tempmin = minN;
+			maxN = std::max(tempmax * num, std::max(num, tempmin * num));
+			minN = std::min(tempmin * num, std::min(num, tempmax * num));
+			ret = max(maxN, ret);
+			cout << "num:" << num << "maxN:" << maxN << "minN:" << minN << "ret:" << ret << "tempmax:" << tempmax << "tempmin:" << tempmin << endl;
+		}
+		return ret;
+	}
+}
+
+namespace solution162
+{
+	int findPeakElement(vector<int>& nums) {
+		std::function<int(int, int)> helper;
+		helper = [&nums, &helper](int left, int right)->decltype(auto)
+		{
+			if (left == right) return left;
+			int middle = (left + right) / 2;
+			if (nums[middle] > nums[middle + 1])
+			{ 
+				return helper(left, middle);
+			}
+			return helper(middle + 1, right);
+		};
+		return helper(0, nums.size() - 1);
+	}
+}
+
+namespace solution165
+{
+	constexpr int newversion = 1;
+	constexpr int oldversion = -1;
+	constexpr int vaildversion = 0;
+	int compareVersion(string version1, string version2) {
+
+		size_t length1 = version1.length();
+		size_t length2 = version2.length();
+		if (0 == length1 || 0 == length2) return vaildversion;
+
+		size_t index1 = 0, index2 = 0;
+		
+		do 
+		{
+			int temp1 = 0, temp2 = 0;
+			while (index1 < length1 && '.' != version1[index1]) temp1 = temp1 * 10 + (version1[index1++] - '0');
+			while (index2 < length2 && '.' != version2[index2]) temp2 = temp2 * 10 + (version2[index2++] - '0');
+			if (temp1 > temp2) return newversion;
+			else if (temp1 < temp2) return oldversion;
+
+			++index1;
+			++index2;
+		}while (index1 < length1 || index2 < length2);
+
+		return vaildversion;
+	}
+
+
+	int compareVersion2(string&& version1, string&& version2) {
+		int n = max(count(begin(version1), end(version1), '.'), count(begin(version2), end(version2), '.')) + 1;
+		vector<int> vi1(n), vi2(n);
+		auto p = [&](vector<int>& vi, string& str, regex r) {int i = 0; for (auto it = sregex_iterator(str.begin(), str.end(), r); it != sregex_iterator(); ++it) vi[i++] = stoi(it->str()); };
+		p(vi1, version1, regex("[0-9]+"));
+		p(vi2, version2, regex("[0-9]+"));
+		return vi1 < vi2 ? -1 : (vi1 > vi2 ? 1 : 0);
+	}
+
+	int compareVersion3(string&& version1, string&& version2) {
+		regex ws_re("\\.");
+		vector<std::string> vecver1(sregex_token_iterator(version1.begin(), version1.end(), ws_re, -1), sregex_token_iterator());
+		vector<std::string> vecver2(sregex_token_iterator(version2.begin(), version2.end(), ws_re, -1), sregex_token_iterator());
+		int len = max(vecver1.size(), vecver2.size());
+		vecver1.resize(len);
+		vecver2.resize(len);
+		for (int i = 0; i < len; ++i) {
+			if (atoi(vecver1[i].c_str()) > atoi(vecver2[i].c_str())) {
+				return 1;
+			}
+			else if (atoi(vecver1[i].c_str()) < atoi(vecver2[i].c_str())) {
+				return -1;
+			}
+		}
+		return 0;
+	}
+
+}
+
+namespace solution576
+{
+	constexpr int limitation = 51;
+	constexpr int uncalculated = -1;
+	constexpr int magic = 1000000007;
+	int findPaths(int m, int n, int maxMove, int startRow, int startColumn) {
+		//static vector<vector<vector<int>>> dp(limitation, vector<vector<int>>(limitation, vector<int>(limitation)));
+		static int dp[limitation][limitation][limitation];
+		function<int(int, int, int, int)> helper;
+		helper = [&helper, n, m](int steps, int maxmove, int i, int j)
+		{
+			
+			if (steps > maxmove) return 0;
+			if ((i < 0) or (i >= m) or (j < 0) or (j >= n)) return 1;
+			int& ref = dp[i][j][steps];
+			if (uncalculated != ref) return ref;
+			int count = 0;
+			count = (count + helper(steps + 1, maxmove, i + 1, j)) % magic;
+			count = (count + helper(steps + 1, maxmove, i - 1, j)) % magic;
+			count = (count + helper(steps + 1, maxmove, i , j + 1)) % magic;
+			count = (count + helper(steps + 1, maxmove, i , j - 1)) % magic;
+			return ref = count;
+		};
+		memset(dp, -1, sizeof(dp) );
+		return helper(0, maxMove, startRow, startColumn);
+	}
+}
+
+
+namespace solution166
+{
+	constexpr char Zero[] = "0";
+	constexpr char nag = '-';
+	constexpr char dot = '.';
+
+	string fractionToDecimal(int numerator, int denominator) {
+		
+		if (0 == numerator) return std::move(Zero);
+		string ret = "";
+		if ((numerator >= 0) ^ (denominator > 0)) ret.push_back(std::move(nag));
+		uint64_t num = abs(numerator);
+		uint64_t den = abs(denominator);
+		uint64_t rem = num % den;
+		unordered_map<int, int> memmap;
+		ret += to_string(num / den);
+		if (0 != rem)
+		{
+			ret.push_back(std::move(dot));
+			int index = ret.length() - 1;
+			while (rem && memmap.end() == memmap.find(rem))
+			{
+				memmap[rem] = ++index;
+				rem *= 10;
+				ret += to_string(rem / den);
+				rem %= den;
+			}
+			if (memmap.end() != memmap.find(rem))
+			{
+				ret.insert(memmap[rem], std::move("("));
+				ret.push_back(std::move(')'));
+			}
+		}
+
+		return ret;
+	}
+}
+
+namespace solution187
+{
+	vector<string> findRepeatedDnaSequences(string s) {
+		
+		if (10 > s.length()) return{};
+		vector<string> ret;
+		unordered_map<string, int> data;
+		uint32_t length = s.length() - 10;
+		for (int index = 0; index <= length; ++index)
+		{
+			string temp = s.substr(index, 10);
+			data[temp]++;
+			if (2 == data[temp]) ret.emplace_back(std::move(temp));
+		}
+		return ret;
+
+	}
+}
+
+
+namespace solution173
+{
+	struct TreeNode {
+		int val;
+		TreeNode* left;
+		TreeNode* right;
+		TreeNode() : val(0), left(nullptr), right(nullptr) {}
+		TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+		TreeNode(int x, TreeNode* left, TreeNode* right) : val(x), left(left), right(right) {}
+		
+	};
+	class BSTIterator {
+		
+	public:
+		BSTIterator(TreeNode* root) {
+			traver(root);
+		}
+
+		int next() {
+			TreeNode* node = data.top();
+			data.pop();
+			if (nullptr != node->right)
+			{
+				traver(node->right);
+			}
+			return node->val;
+		}
+
+		bool hasNext() {
+			return !data.empty();
+		}
+	private:
+		void traver(TreeNode* node)
+		{
+			while (node)
+			{
+				data.push(node);
+				node = node->left;
+			}
+		}
+	private:
+		stack<TreeNode*> data;
+	};
+
+}
+
+namespace solution189
+{
+	void rotate(vector<int>& nums, int k) {
+		uint32_t length = nums.size();
+		uint32_t step = k % length;
+		if (0 == step) return;
+		reverse(nums.begin(), nums.end());
+		uint32_t left = 0, right = step - 1;
+		while (left < right)
+		{
+			swap(nums[left++], nums[right--]);
+		}
+		left = step;
+		right = length - 1;
+		while (left < right)
+		{
+			swap(nums[left++], nums[right--]);
+		}
+	}
+	void rotate2(vector<int>& nums, int k) {
+		std::rotate(nums.begin(), nums.begin() + (nums.size() - (k % nums.size())), nums.end());
+// 		k = k % nums.size();
+// 		reverse(nums.begin(), nums.end());
+// 		reverse(nums.begin(), nums.begin() + k);
+// 		reverse(nums.begin() + k, nums.end());
+	}
+}
+
+namespace solution200
+{
+	class unionfind
+	{
+		
+	public:
+		unionfind(const vector<vector<char>>& grid, uint32_t row, uint32_t col) : count{0}
+		{
+			constexpr char islandmark = '1';
+			for (uint32_t indexrow = 0; indexrow < row; ++indexrow)
+			{
+				const vector<char>& line = grid[indexrow];
+				for (uint32_t indexcol = 0; indexcol < col; ++indexcol)
+				{
+					if (islandmark == line[indexcol])
+					{
+						parent.emplace_back(std::move(indexrow * col + indexcol));
+						++count;
+					}
+					else 
+					{
+						parent.emplace_back(std::move(-1));
+					}
+					rank.emplace_back(0);
+				}
+			}
+		}
+		void unite(int x, int y)
+		{
+			function<int(int)> find;
+			find = [&find, this](int index)
+			{
+				int ret = parent[index];
+				if (index != ret)
+				{
+					parent[index] = find(ret);
+					ret = parent[index];
+				}
+				return ret;
+			};
+			int rootx = find(x);
+			int rooty = find(y);
+			if (rootx != rooty)
+			{
+				if (rank[rootx] < rank[rooty])
+				{
+					swap(rootx, rooty);
+				}
+				else if(rank[rootx] == rank[rooty])
+				{
+					rank[rootx] += 1;
+				}
+				parent[rootx] = rooty;
+				--count;
+			}
+		}
+
+		constexpr int getCount()
+		{
+			return count;
+		}
+
+	private:
+		vector<int> parent;
+		vector<int> rank;
+		int count;
+	};
+	int numIslands(vector<vector<char>>& grid) {
+		constexpr char islandmark = '1';
+		constexpr char iswotermark = '0';
+		uint32_t lengthrow = grid.size();
+		if (0 == lengthrow) return 0;
+		uint32_t lengthcol = grid.back().size();
+
+		unionfind uf(grid, lengthrow, lengthcol);
+		for (uint32_t indexrow = 0; indexrow < lengthrow; ++indexrow)
+		{
+			vector<char>& line = grid[indexrow];
+			int tempcol = indexrow * lengthcol;
+			for (uint32_t indexcol = 0; indexcol < lengthcol; ++indexcol)
+			{
+				if (islandmark == line[indexcol])
+				{
+					line[indexcol] = iswotermark;
+					int tempx = tempcol + indexcol;
+					if (indexrow >= 1 && (islandmark == grid[indexrow - 1][indexcol])) uf.unite(tempx, (indexrow - 1) * lengthcol + indexcol);
+					if (indexrow + 1 < lengthrow && (islandmark == grid[indexrow + 1][indexcol])) uf.unite(tempx, (indexrow + 1) * lengthcol + indexcol);
+					if (indexcol >= 1 && (islandmark == grid[indexrow][indexcol - 1])) uf.unite(tempx, tempcol + indexcol - 1);
+					if (indexcol + 1 < lengthcol && (islandmark == grid[indexrow][indexcol + 1])) uf.unite(tempx, tempcol + indexcol + 1);
+					
+				}
+			}
+		}
+		return uf.getCount();
+	}
+
+	void dfs(vector<vector<char>>& grid, int r, int c) {
+		int nr = grid.size();
+		int nc = grid[0].size();
+
+		grid[r][c] = '0';
+		if (r - 1 >= 0 && grid[r - 1][c] == '1') dfs(grid, r - 1, c);
+		if (r + 1 < nr && grid[r + 1][c] == '1') dfs(grid, r + 1, c);
+		if (c - 1 >= 0 && grid[r][c - 1] == '1') dfs(grid, r, c - 1);
+		if (c + 1 < nc && grid[r][c + 1] == '1') dfs(grid, r, c + 1);
+	}
+
+	int numIslands2(vector<vector<char>>& grid) {
+
+		int islands = 0;
+		int nr = grid.size();
+		if (!nr) return 0;
+		int nc = grid[0].size();
+
+		for (int r = 0; r < nr; r++)
+		{
+			for (int c = 0; c < nc; c++)
+			{
+				if (grid[r][c] == '1')
+				{
+					islands++;
+					dfs(grid, r, c);
+				}
+			}
+		}
+
+		return islands;
+	}
+
+
+}
+
+
+namespace solution201
+{
+	int rangeBitwiseAnd(int left, int right) {
+		int ret{ std::move(right) };
+		while (left < ret)
+		{
+			ret = ret & (ret - 1);
+		}
+		return ret;
+	}
+}
+
+
+
+namespace solution677
+{
+	class MapSum {
+	public:
+		/** Initialize your data structure here. */
+		MapSum() {
+
+		}
+
+		void insert(string key, int val) {
+			data[key] = val;
+		}
+
+		int sum(string prefix) {
+			int ret = 0;
+			for (auto& p : data)
+			{
+				if (0 == std::get<0>(p).find(prefix))
+				{
+					ret += std::get<1>(p);
+				}
+			}
+			return ret;
+		}
+	private:
+		unordered_map<string, int> data;
+	};
+}
+
+
+
+namespace solution207
+{
+	bool canFinish(int numCourses, vector<vector<int>>& prerequisites) {
+		vector<vector<int>> graph(numCourses);
+		vector<int> visit(numCourses, 0);
+		bool vaild = true;
+
+		for (auto& pre : prerequisites)
+		{
+			graph[pre[1]].emplace_back( pre[0]);
+		}
+
+		function<void(int)> dfs;
+		dfs = [&dfs, &graph, &visit, &vaild](int node) ->void 
+		{
+			visit[node] = true;
+			
+			for (auto& n : graph[node])
+			{
+		
+				if (0 == visit[n])
+				{
+					dfs(n);
+					if (!vaild)
+					{
+						return;
+					}
+				}
+				else if (1 == visit[n])
+				{
+					vaild = false;
+					return;
+				}
+			}
+			visit[node] = 2;
+			
+		};
+		for (int i = 0; (i < numCourses) && vaild; ++i)
+		{
+			if (!visit[i])
+			{
+				dfs(i);
+			}
+		}
+		return vaild;
+
+
+	}
+}
+
+
+
+namespace solution877
+{
+	//length of piles always >= 2
+	bool stoneGame(vector<int>& piles) {
+		int length = piles.size();
+		auto ret = vector<int>(piles);
+
+		for (int index = length - 2; index >= 0; --index)
+		{
+			for (int index2 = index + 1; index2 < length; ++index2)
+			{
+				std::max(piles[index] - ret[index2], piles[index2] - ret[index2 - 1]);
+			}
+		}
+		return ret.back()>0;
+
+	}
+};
+
+
+namespace solution429
+{
+	class Node {
+	public:
+		int val;
+		vector<Node*> children;
+
+		Node() {}
+
+		Node(int _val) {
+			val = _val;
+		}
+
+		Node(int _val, vector<Node*> _children) {
+			val = _val;
+			children = _children;
+		}
+	};
+
+	vector<vector<int>> levelOrder(Node* root) {
+
+		vector<vector<int>> ret;
+		if (nullptr == root)
+		{
+			return ret;
+		}
+		if (root->children.empty())
+		{
+			ret.emplace_back(vector<int>{ std::move(root->val) });
+			return  ret;
+		}
+
+		queue<Node*> data;
+		vector<int> tempret;
+		data.emplace(std::move(root));
+		int step = data.size();
+		while (!data.empty())
+		{
+			Node* temp = data.front();
+			data.pop();
+			tempret.emplace_back(std::move(temp->val));
+			step--;
+
+			for (auto next : temp->children)
+			{
+				data.emplace(std::move(next));
+			}
+
+			if (0 == step)
+			{
+				ret.emplace_back(std::move(tempret));
+				step = data.size();
+			}
+		}
+		return ret;
+
+	}
+}
+namespace solution208
+{
+	struct Node
+	{
+		bool isEnd = false;
+		Node* tire[26] = {nullptr};
+	};
+
+	class Trie {
+	private: 
+		Node* root;
+	public:
+		/** Initialize your data structure here. */
+		Trie() :root{new Node()}
+		{
+			
+		}
+		~Trie()
+		{
+			clear(root);
+		}
+
+		void clear(Node* root)
+		{
+			for (Node* next : root->tire)
+			{
+				if (nullptr != next)
+				{
+					clear(next);
+				}
+			}
+			delete root;
+		}
+
+		/** Inserts a word into the trie. */
+		void insert(string word) {
+			if (0 == word.length())return;
+
+			Node* cur = root;
+			for (auto& ch : word)
+			{
+				int data = ch - 'a';
+				Node*& pos = cur->tire[data];
+				if (nullptr == pos)
+				{
+					pos = new Node();
+				}
+				cur = pos;
+			}
+			cur->isEnd = true;
+			
+		}
+
+		/** Returns if the word is in the trie. */
+		bool search(string word) {
+			if (0 == word.length()) return false;
+			
+			Node* cur = root;
+			for (auto& ch : word)
+			{
+				int data = ch - 'a';
+				Node*& pos = cur->tire[data];
+				if (nullptr == pos) return false;
+				cur = pos;
+			}
+			return cur->isEnd;
+
+		}
+
+		/** Returns if there is any word in the trie that starts with the given prefix. */
+		bool startsWith(string prefix) {
+			if (0 == prefix.length())return false;
+			Node* cur = root;
+			for (auto& ch : prefix)
+			{
+				int data = ch - 'a';
+				Node*& pos = cur->tire[data];
+				if (nullptr == pos) return false;
+				cur = pos;
+			}
+			return true;
+	
+		}
+	};
+
+}
+
+
+namespace solution132
+{
+	int minCut(string s) {
+		int length = s.length();
+		if (length < 1) return  0;
+		bool* temp = new bool[length * length];
+		memset(temp, true, length * length * sizeof(bool));
+		for (int begin = length - 2; begin >= 0; begin--)
+		{
+			for (int end = begin + 1; end < length; ++end)
+			{
+				int pos = begin * length + end;
+				temp[pos] = (s[begin] == s[end]) && temp[(begin + 1) * length + (end - 1)];
+
+			}
+		}
+		for (int i = 0; i < length * length; ++i)
+		{
+			cout << temp[i] << " ";
+		}
+		unsigned int* ret = new unsigned int[length];
+		memset(ret, 1<<7, sizeof(unsigned int) * length); 
+		for (int index = 0; index < length; ++index)
+		{
+			if (temp[index])
+			{
+				ret[index] = 0;
+			}
+			else
+			{
+				for (int row = 0; row < index; ++row)
+				{
+					if (temp[(row + 1) * length + index])
+					{
+						cout << ret[index] << ret[row] + 1;
+						ret[index] = std::min(ret[index], ret[row] + 1);
+					}
+				}
+			}
+		}
+		cout << endl;
+		for (int i = 0; i < length; ++i)
+		{
+			cout << ret[i] << " ";
+		}
+		int anwser = ret[length - 1];
+
+		delete[] temp;
+
+		delete[] ret;
+
+		return anwser;
+	}
+}
+
+
+
+namespace solution926
+{
+	int minFlipsMonoIncr(string s) {
+		constexpr char zero = '0';
+		int length = s.length();
+		if (1 == length)
+		{
+			return 0;
+		}
+		int ret = 0, cnt = 0;
+		for (const auto& ch: s )
+		{
+			zero == ch ? ++ret: ++cnt;
+			ret = std::min(ret, cnt);
+		}
+		return ret;
+	}
+}
+
+namespace solution954
+{
+
+	struct cmp
+	{
+		bool operator()(const int& a, const int& b) const
+		{
+			if (a < 0 and b < 0)
+				return a > b;
+			return a < b;
+		}
+	};
+
+	bool canReorderDoubled(vector<int>& arr) {
+		map<int, int, cmp> data;
+		for (const auto& x : arr)
+		{
+			if(data.end() == data.find(x))
+			{ 
+				data[x] = 1;
+			} else {
+				++data[x];
+			}
+		}
+		for (auto& i : data)
+		{
+			auto first = std::get<0>(i);
+			auto second = std::get<1>(i);
+			auto doublefirst = 2 * first;
+			if (0 == second) continue;
+			if (data.end() == data.find(doublefirst) or second > data[doublefirst]) return false;
+
+			data[doublefirst] -= second;
+		}
+		return true;
+	}
+
+}
+
+
+namespace solution240
+{
+	bool searchMatrix(vector<vector<int>>& matrix, int target) {
+		int row = matrix.size(), col = matrix.back().size();
+		if (1 == row == col) return matrix[0][0] == target;
+		int indexrow = 0, indexcol = col - 1;
+		for (; indexrow < row && indexcol >= 0;)
+		{
+			int& ref = matrix[indexrow][indexcol];
+			if (target == ref) return true;
+			else if (target < ref)
+			{
+				--indexcol;
+			}
+			else
+			{
+				++indexrow;
+			}
+		}
+		return false;
+	}
+}
 
 int main()
 {
